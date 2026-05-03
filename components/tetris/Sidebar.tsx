@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { PIECE_STYLES } from "@/lib/tetris/constants";
 import type { Piece } from "@/lib/tetris/types";
 
 const MINI_CELL = 20;
@@ -27,15 +28,18 @@ function PiecePreview({ piece, label }: { piece: Piece | null; label: string }) 
         {Array.from({ length: rows }, (_, y) =>
           Array.from({ length: cols }, (_, x) => {
             const filled = piece?.shape[y][x];
+            const style = filled ? PIECE_STYLES[piece!.color] : null;
             return (
               <div
                 key={`${y}-${x}`}
                 style={{
                   width: MINI_CELL,
                   height: MINI_CELL,
-                  backgroundColor: filled ? piece!.color : "#1a1a1a",
-                  border: "1px solid #333",
+                  background: filled && style ? style.gradient : "#1a1a1a",
+                  border: filled ? "1px solid rgba(255,255,255,0.15)" : "1px solid #333",
                   boxSizing: "border-box",
+                  boxShadow: filled && style ? style.glow : "none",
+                  borderRadius: filled ? 2 : 0,
                 }}
               />
             );

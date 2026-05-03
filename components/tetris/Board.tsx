@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BOARD_WIDTH, BOARD_HEIGHT } from "@/lib/tetris/constants";
+import { BOARD_WIDTH, BOARD_HEIGHT, PIECE_STYLES } from "@/lib/tetris/constants";
 import { hardDrop } from "@/lib/tetris/movement";
 import type { Board as BoardType, Piece } from "@/lib/tetris/types";
 
@@ -63,24 +63,37 @@ export default function Board({ board, currentPiece }: BoardProps) {
         display: "inline-grid",
         gridTemplateColumns: `repeat(${BOARD_WIDTH}, ${CELL_SIZE}px)`,
         gridTemplateRows: `repeat(${BOARD_HEIGHT}, ${CELL_SIZE}px)`,
-        border: "2px solid #555",
-        backgroundColor: "#111",
+        border: "3px solid #444",
+        borderRadius: 4,
+        backgroundColor: "#0a0a0a",
+        boxShadow: "0 0 20px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.5)",
       }}
     >
       {grid.flatMap((row, y) =>
-        row.map((cell, x) => (
-          <div
-            key={`${y}-${x}`}
-            style={{
-              width: CELL_SIZE,
-              height: CELL_SIZE,
-              backgroundColor: cell.color ?? "#1a1a1a",
-              opacity: cell.ghost ? 0.3 : 1,
-              border: "1px solid #333",
-              boxSizing: "border-box",
-            }}
-          />
-        ))
+        row.map((cell, x) => {
+          const style = cell.color ? PIECE_STYLES[cell.color] : null;
+          return (
+            <div
+              key={`${y}-${x}`}
+              style={{
+                width: CELL_SIZE,
+                height: CELL_SIZE,
+                background: cell.ghost
+                  ? cell.color ?? "#1a1a1a"
+                  : style
+                    ? style.gradient
+                    : "#1a1a1a",
+                opacity: cell.ghost ? 0.3 : 1,
+                border: cell.color && !cell.ghost
+                  ? "1px solid rgba(255,255,255,0.15)"
+                  : "1px solid #222",
+                boxSizing: "border-box",
+                boxShadow: cell.color && !cell.ghost ? style?.glow : "none",
+                borderRadius: cell.color && !cell.ghost ? 2 : 0,
+              }}
+            />
+          );
+        })
       )}
     </div>
   );

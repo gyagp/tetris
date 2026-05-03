@@ -11,7 +11,7 @@ const T_PIECE: Piece = {
     [0, 1, 0],
     [1, 1, 1],
   ],
-  color: "#a020f0",
+  color: "#a000f0",
   position: { x: 3, y: 0 },
 };
 
@@ -59,7 +59,7 @@ describe("Sidebar", () => {
     const cells = grid.children;
     expect(cells).toHaveLength(6); // T-piece: 2x3
     const filled = Array.from(cells).filter(
-      (c) => (c as HTMLElement).style.backgroundColor !== "rgb(26, 26, 26)"
+      (c) => (c as HTMLElement).style.background.includes("linear-gradient")
     );
     expect(filled).toHaveLength(4);
   });
@@ -73,7 +73,7 @@ describe("Sidebar", () => {
     const cells = grid.children;
     expect(cells).toHaveLength(4); // I-piece: 1x4
     const filled = Array.from(cells).filter(
-      (c) => (c as HTMLElement).style.backgroundColor !== "rgb(26, 26, 26)"
+      (c) => (c as HTMLElement).style.background.includes("linear-gradient")
     );
     expect(filled).toHaveLength(4);
   });

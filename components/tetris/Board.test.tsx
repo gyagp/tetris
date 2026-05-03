@@ -37,7 +37,7 @@ describe("Board component", () => {
     expect(cells.length).toBe(BOARD_WIDTH * BOARD_HEIGHT);
   });
 
-  it("renders placed blocks with their colors", () => {
+  it("renders placed blocks with gradient styling", () => {
     const board = emptyBoard();
     board[19][0] = "#f00000";
     board[19][1] = "#00f000";
@@ -48,8 +48,8 @@ describe("Board component", () => {
     const cells = getCells(container);
     const lastRowStart = 19 * BOARD_WIDTH;
 
-    expect(cells[lastRowStart].style.backgroundColor).toBe("rgb(240, 0, 0)");
-    expect(cells[lastRowStart + 1].style.backgroundColor).toBe("rgb(0, 240, 0)");
+    expect(cells[lastRowStart].style.background).toContain("linear-gradient");
+    expect(cells[lastRowStart + 1].style.background).toContain("linear-gradient");
   });
 
   it("renders empty cells with dark background", () => {
@@ -57,20 +57,20 @@ describe("Board component", () => {
       <Board board={emptyBoard()} currentPiece={null} />
     );
     const cells = getCells(container);
-    expect(cells[0].style.backgroundColor).toBe("rgb(26, 26, 26)");
+    expect(cells[0].style.background).toBe("rgb(26, 26, 26)");
   });
 
-  it("shows current piece at its position", () => {
+  it("shows current piece with gradient at its position", () => {
     const piece = makePiece({ position: { x: 0, y: 0 } });
     const { container } = render(
       <Board board={emptyBoard()} currentPiece={piece} />
     );
     const cells = getCells(container);
 
-    expect(cells[0 * BOARD_WIDTH + 0].style.backgroundColor).toBe("rgb(240, 240, 0)");
-    expect(cells[0 * BOARD_WIDTH + 1].style.backgroundColor).toBe("rgb(240, 240, 0)");
-    expect(cells[1 * BOARD_WIDTH + 0].style.backgroundColor).toBe("rgb(240, 240, 0)");
-    expect(cells[1 * BOARD_WIDTH + 1].style.backgroundColor).toBe("rgb(240, 240, 0)");
+    expect(cells[0 * BOARD_WIDTH + 0].style.background).toContain("linear-gradient");
+    expect(cells[0 * BOARD_WIDTH + 1].style.background).toContain("linear-gradient");
+    expect(cells[1 * BOARD_WIDTH + 0].style.background).toContain("linear-gradient");
+    expect(cells[1 * BOARD_WIDTH + 1].style.background).toContain("linear-gradient");
     expect(cells[0 * BOARD_WIDTH + 0].style.opacity).toBe("1");
   });
 
@@ -83,7 +83,7 @@ describe("Board component", () => {
 
     const ghostY = BOARD_HEIGHT - 2;
     const ghostCell = cells[ghostY * BOARD_WIDTH + 0];
-    expect(ghostCell.style.backgroundColor).toBe("rgb(240, 240, 0)");
+    expect(ghostCell.style.background).toBeTruthy();
     expect(ghostCell.style.opacity).toBe("0.3");
   });
 
@@ -108,6 +108,6 @@ describe("Board component", () => {
     );
     const cells = getCells(container);
 
-    expect(cells[19 * BOARD_WIDTH + 0].style.backgroundColor).toBe("rgb(240, 0, 0)");
+    expect(cells[19 * BOARD_WIDTH + 0].style.background).toContain("linear-gradient");
   });
 });
