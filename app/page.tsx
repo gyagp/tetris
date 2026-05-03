@@ -100,9 +100,41 @@ export default function Home() {
         minHeight: "100vh",
         backgroundColor: "#000",
         paddingTop: 40,
+        overflow: "hidden",
       }}
     >
       <style>{`
+        .game-container {
+          display: flex;
+          transform-origin: top center;
+        }
+        @media (max-width: 500px) {
+          .game-container {
+            flex-direction: column;
+            align-items: center;
+          }
+          .game-container .game-sidebar {
+            margin-left: 0 !important;
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+          .game-container .game-sidebar > div {
+            margin-bottom: 0 !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .game-container {
+            transform: scale(calc(min(1, (100vw - 20px) / 310)));
+          }
+        }
+        @media (max-width: 360px) {
+          .game-container {
+            transform: scale(calc((360px - 20px) / 310));
+          }
+        }
         @keyframes overlay-fade-scale {
           from { opacity: 0; transform: scale(0.9); }
           to { opacity: 1; transform: scale(1); }
@@ -125,6 +157,7 @@ export default function Home() {
           50% { opacity: 1; }
         }
       `}</style>
+      <div className="game-container">
       <div style={{ position: "relative" }}>
         <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
         {!state.isStarted && (
@@ -188,12 +221,14 @@ export default function Home() {
         )}
       </div>
       <Sidebar
+        className="game-sidebar"
         nextPiece={state.nextPiece}
         holdPiece={state.holdPiece}
         score={state.score}
         level={state.level}
         lines={state.lines}
       />
+      </div>
     </div>
   );
 }

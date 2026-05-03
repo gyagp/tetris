@@ -51,6 +51,7 @@ function PiecePreview({ piece, label }: { piece: Piece | null; label: string }) 
 }
 
 interface SidebarProps {
+  className?: string;
   nextPiece: Piece | null;
   holdPiece: Piece | null;
   score: number;
@@ -58,9 +59,9 @@ interface SidebarProps {
   lines: number;
 }
 
-export default function Sidebar({ nextPiece, holdPiece, score, level, lines }: SidebarProps) {
+export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines }: SidebarProps) {
   return (
-    <div style={{ marginLeft: 20, minWidth: 120 }}>
+    <div className={className} style={{ marginLeft: 20, minWidth: 120 }}>
       <PiecePreview piece={holdPiece} label="Hold" />
       <PiecePreview piece={nextPiece} label="Next" />
       <div style={{ color: "#aaa", fontSize: 12, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>

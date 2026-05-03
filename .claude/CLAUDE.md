@@ -1,13 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add animated transitions for game state overlays (start, pause, game over screens)
+Ensure responsive layout works across screen sizes
 
 ## Acceptance Criteria
-- Start screen has fade-in or scale-in entrance animation
-- Pause overlay animates in/out smoothly
-- Game over screen has dramatic entrance animation
-- Title text has subtle animation (pulse, glow, or shimmer)
+- Game board and sidebar scale appropriately on small screens
+- Layout remains usable at 360px width minimum
+- No horizontal scrolling on standard screen sizes
 - npm run build succeeds
 
 ## Rules
