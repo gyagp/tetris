@@ -1,65 +1,128 @@
-import Image from "next/image";
+"use client";
+
+import React, { useReducer, useEffect, useCallback, useRef } from "react";
+import Board from "@/components/tetris/Board";
+import Sidebar from "@/components/tetris/Sidebar";
+import { gameReducer, createInitialState } from "@/lib/tetris/engine";
+import { getDropInterval } from "@/lib/tetris/scoring";
 
 export default function Home() {
+  const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  useEffect(() => {
+    if (state.isGameOver || state.isPaused) return;
+    const interval = getDropInterval(state.level);
+    const timer = setInterval(() => dispatch({ type: "TICK" }), interval);
+    return () => clearInterval(timer);
+  }, [state.level, state.isGameOver, state.isPaused]);
+
+  const handleKey = useCallback((e: KeyboardEvent) => {
+    const s = stateRef.current;
+    switch (e.key) {
+      case "ArrowLeft":
+        e.preventDefault();
+        dispatch({ type: "MOVE_LEFT" });
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        dispatch({ type: "MOVE_RIGHT" });
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        dispatch({ type: "SOFT_DROP" });
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        dispatch({ type: "ROTATE_CW" });
+        break;
+      case "z":
+      case "Z":
+        dispatch({ type: "ROTATE_CCW" });
+        break;
+      case " ":
+        e.preventDefault();
+        dispatch({ type: "HARD_DROP" });
+        break;
+      case "c":
+      case "C":
+        dispatch({ type: "HOLD" });
+        break;
+      case "p":
+      case "P":
+        dispatch(s.isPaused ? { type: "RESUME" } : { type: "PAUSE" });
+        break;
+      case "r":
+      case "R":
+        if (s.isGameOver) dispatch({ type: "RESTART" });
+        break;
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        minHeight: "100vh",
+        backgroundColor: "#000",
+        paddingTop: 40,
+      }}
+    >
+      <div style={{ position: "relative" }}>
+        <Board board={state.board} currentPiece={state.currentPiece} />
+        {state.isPaused && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.7)",
+              color: "#fff",
+              fontSize: 32,
+              fontWeight: "bold",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            PAUSED
+          </div>
+        )}
+        {state.isGameOver && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.7)",
+              color: "#fff",
+              fontSize: 28,
+              fontWeight: "bold",
+              gap: 12,
+            }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div>GAME OVER</div>
+            <div style={{ fontSize: 14, fontWeight: "normal" }}>Press R to restart</div>
+          </div>
+        )}
+      </div>
+      <Sidebar
+        nextPiece={state.nextPiece}
+        holdPiece={state.holdPiece}
+        score={state.score}
+        level={state.level}
+        lines={state.lines}
+      />
     </div>
   );
 }
