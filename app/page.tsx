@@ -14,12 +14,21 @@ export default function Home() {
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [showTSpin, setShowTSpin] = useState(false);
   const [tSpinExiting, setTSpinExiting] = useState(false);
+  const [showTetris, setShowTetris] = useState(false);
+  const [tetrisExiting, setTetrisExiting] = useState(false);
 
   useEffect(() => {
     if (state.clearingRows.length > 0) {
       setShakeIntensity(state.clearingRows.length);
       const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
       const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
+      if (state.clearingRows.length === 4) {
+        setShowTetris(true);
+        setTetrisExiting(false);
+        const exitTimer = setTimeout(() => setTetrisExiting(true), 1000);
+        const hideTimer = setTimeout(() => { setShowTetris(false); setTetrisExiting(false); }, 1500);
+        return () => { clearTimeout(shakeTimer); clearTimeout(timer); clearTimeout(exitTimer); clearTimeout(hideTimer); };
+      }
       if (state.tSpin) {
         setShowTSpin(true);
         setTSpinExiting(false);
@@ -250,6 +259,33 @@ export default function Home() {
           50% { opacity: 0.2; }
           100% { opacity: 0; }
         }
+        @keyframes tetris-enter {
+          0% { opacity: 0; transform: scale(0.1) rotate(-30deg); }
+          30% { opacity: 1; transform: scale(1.4) rotate(5deg); }
+          60% { transform: scale(0.9) rotate(-3deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes tetris-exit {
+          0% { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; transform: scale(2); }
+        }
+        @keyframes tetris-glow {
+          0%, 100% { text-shadow: 0 0 15px #fbbf24, 0 0 40px #f59e0b, 0 0 70px #d97706; }
+          50% { text-shadow: 0 0 25px #fde68a, 0 0 60px #fbbf24, 0 0 100px #f59e0b, 0 0 130px #d97706; }
+        }
+        @keyframes tetris-flash {
+          0% { opacity: 0.8; }
+          40% { opacity: 0.3; }
+          100% { opacity: 0; }
+        }
+        @keyframes tetris-rays {
+          0% { transform: rotate(0deg); opacity: 0.7; }
+          100% { transform: rotate(180deg); opacity: 0; }
+        }
+        @keyframes tetris-particle {
+          0% { opacity: 1; transform: translate(0, 0) scale(1); }
+          100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+        }
       `}</style>
       <div className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
       <div style={{ position: "relative" }}>
@@ -382,6 +418,71 @@ export default function Home() {
               }}
             >
               T-SPIN
+            </div>
+          </div>
+        )}
+        {showTetris && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              zIndex: 20,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "radial-gradient(circle, rgba(251,191,36,0.5) 0%, rgba(245,158,11,0.2) 40%, transparent 70%)",
+                animation: "tetris-flash 1.2s ease-out forwards",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: "-50%",
+                background: "conic-gradient(from 0deg, transparent 0%, rgba(251,191,36,0.3) 5%, transparent 10%, transparent 15%, rgba(251,191,36,0.2) 20%, transparent 25%)",
+                animation: "tetris-rays 1.5s linear forwards",
+              }}
+            />
+            {Array.from({ length: 12 }).map((_, i) => {
+              const angle = (i / 12) * 360;
+              const dist = 80 + Math.random() * 60;
+              const tx = Math.cos((angle * Math.PI) / 180) * dist;
+              const ty = Math.sin((angle * Math.PI) / 180) * dist;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    position: "absolute",
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: ["#fbbf24", "#f59e0b", "#fde68a", "#fff"][i % 4],
+                    boxShadow: `0 0 6px ${["#fbbf24", "#f59e0b", "#fde68a", "#fff"][i % 4]}`,
+                    ["--tx" as string]: `${tx}px`,
+                    ["--ty" as string]: `${ty}px`,
+                    animation: `tetris-particle ${0.6 + Math.random() * 0.4}s ease-out ${i * 0.03}s forwards`,
+                  }}
+                />
+              );
+            })}
+            <div
+              style={{
+                fontSize: 42,
+                fontWeight: "bold",
+                color: "#fbbf24",
+                letterSpacing: 6,
+                animation: tetrisExiting
+                  ? "tetris-exit 0.5s ease-in forwards"
+                  : "tetris-enter 0.6s ease-out, tetris-glow 0.5s ease-in-out 0.6s infinite",
+              }}
+            >
+              TETRIS!
             </div>
           </div>
         )}

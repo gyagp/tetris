@@ -1,12 +1,11 @@
 # Autopo test Session
 
 ## Work Unit
-Add T-spin visual celebration effect
+Add Tetris (4-line clear) special effect
 
 ## Acceptance Criteria
-- Special animated overlay or flash appears on T-spin
-- Visual is distinct from normal line clear effects
-- Animation auto-dismisses after ~1 second
+- 4-line clear triggers a distinct special effect (flash, particles, or screen-wide animation)
+- Effect is visually more intense than single/double/triple clears
 - npm run build succeeds
 
 ## Rules
