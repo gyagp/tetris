@@ -2,7 +2,23 @@
 
 import React, { useRef, useCallback, useState } from "react";
 import GameInstance from "@/components/tetris/GameInstance";
-import type { GameInstanceHandle } from "@/components/tetris/GameInstance";
+import type { GameInstanceHandle, PlayerTheme } from "@/components/tetris/GameInstance";
+
+const P1_THEME: PlayerTheme = {
+  accent: "#00d4ff",
+  border: "rgba(0, 180, 255, 0.5)",
+  borderHover: "rgba(0, 200, 255, 0.7)",
+  glow: "rgba(0, 180, 255, 0.2)",
+  glowHover: "rgba(0, 200, 255, 0.35)",
+};
+
+const P2_THEME: PlayerTheme = {
+  accent: "#ff6b35",
+  border: "rgba(255, 100, 50, 0.5)",
+  borderHover: "rgba(255, 120, 60, 0.7)",
+  glow: "rgba(255, 100, 50, 0.2)",
+  glowHover: "rgba(255, 120, 60, 0.35)",
+};
 
 const P1_KEYS = {
   left: "ArrowLeft",
@@ -74,8 +90,8 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
   return (
     <div style={{ position: "relative" }}>
       <div key={gameKey} style={{ display: "flex", gap: 48, flexWrap: "wrap", justifyContent: "center" }}>
-        <GameInstance ref={p1Ref} keyBindings={P1_KEYS} label="PLAYER 1 — Arrows / Space / C" onLinesCleared={handleP1Clear} onGameOver={handleP1GameOver} />
-        <GameInstance ref={p2Ref} keyBindings={P2_KEYS} label="PLAYER 2 — WASD / Shift / F" onLinesCleared={handleP2Clear} onGameOver={handleP2GameOver} />
+        <GameInstance ref={p1Ref} keyBindings={P1_KEYS} label="PLAYER 1" theme={P1_THEME} onLinesCleared={handleP1Clear} onGameOver={handleP1GameOver} />
+        <GameInstance ref={p2Ref} keyBindings={P2_KEYS} label="PLAYER 2" theme={P2_THEME} onLinesCleared={handleP2Clear} onGameOver={handleP2GameOver} />
       </div>
 
       {winner && (

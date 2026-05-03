@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add win condition detection and victory screen when one player tops out
+Apply distinct color themes and Player 1/Player 2 labels to each board
 
 ## Acceptance Criteria
-- When one player's game is over, both games stop
-- Victory screen displays showing which player won
-- Option to return to mode selection or play again
+- Player 1 label visible with blue/cyan theme accents
+- Player 2 label visible with red/orange theme accents
+- Board borders and sidebar styling reflect player theme
 - npm run build succeeds
 
 ## Rules

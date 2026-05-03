@@ -24,7 +24,7 @@ function PiecePreview({ piece, label }: { piece: Piece | null; label: string }) 
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ color: "#0ff", fontSize: 11, marginBottom: 4, textTransform: "uppercase", letterSpacing: 2, textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>
+      <div style={{ color: "var(--theme-accent, #0ff)", fontSize: 11, marginBottom: 4, textTransform: "uppercase", letterSpacing: 2, textShadow: `0 0 6px var(--theme-glow, rgba(0, 255, 255, 0.4))` }}>
         {label}
       </div>
       <div
@@ -34,10 +34,10 @@ function PiecePreview({ piece, label }: { piece: Piece | null; label: string }) 
           gridTemplateColumns: `repeat(${cols}, ${MINI_CELL}px)`,
           gridTemplateRows: `repeat(${rows}, ${MINI_CELL}px)`,
           backgroundColor: "rgba(10, 0, 20, 0.7)",
-          border: "1px solid rgba(0, 200, 255, 0.3)",
+          border: "1px solid var(--theme-border, rgba(0, 200, 255, 0.3))",
           borderRadius: 6,
           padding: 4,
-          boxShadow: "0 0 8px rgba(0, 200, 255, 0.1), inset 0 0 12px rgba(0, 0, 0, 0.4)",
+          boxShadow: "0 0 8px var(--theme-glow, rgba(0, 200, 255, 0.1)), inset 0 0 12px rgba(0, 0, 0, 0.4)",
           transition: "transform 0.2s ease-out, box-shadow 0.2s ease",
           transform: transitioning ? "scale(0.85)" : "scale(1)",
         }}
@@ -104,22 +104,22 @@ function AnimatedValue({ value }: { value: number }) {
 export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines }: SidebarProps) {
   const panelStyle: React.CSSProperties = {
     background: "rgba(10, 0, 20, 0.7)",
-    border: "1px solid rgba(0, 200, 255, 0.3)",
+    border: "1px solid var(--theme-border, rgba(0, 200, 255, 0.3))",
     borderRadius: 6,
     padding: "10px 12px",
     marginBottom: 12,
-    boxShadow: "0 0 8px rgba(0, 200, 255, 0.1), inset 0 0 12px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 0 8px var(--theme-glow, rgba(0, 200, 255, 0.1)), inset 0 0 12px rgba(0, 0, 0, 0.4)",
     transition: "border-color 0.2s ease, box-shadow 0.2s ease",
     cursor: "default",
   };
 
   const labelStyle: React.CSSProperties = {
-    color: "#0ff",
+    color: "var(--theme-accent, #0ff)",
     fontSize: 11,
     textTransform: "uppercase",
     letterSpacing: 2,
     marginBottom: 4,
-    textShadow: "0 0 6px rgba(0, 255, 255, 0.4)",
+    textShadow: "0 0 6px var(--theme-glow, rgba(0, 255, 255, 0.4))",
   };
 
   const valueStyle: React.CSSProperties = {
@@ -134,11 +134,11 @@ export default function Sidebar({ className, nextPiece, holdPiece, score, level,
     <div className={className} style={{ marginLeft: 20, minWidth: 120 }}>
       <style>{`
         .stat-panel:hover {
-          border-color: rgba(0, 200, 255, 0.6) !important;
-          box-shadow: 0 0 16px rgba(0, 200, 255, 0.25), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
+          border-color: var(--theme-border-hover, rgba(0, 200, 255, 0.6)) !important;
+          box-shadow: 0 0 16px var(--theme-glow-hover, rgba(0, 200, 255, 0.25)), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
         }
         .piece-preview:hover {
-          box-shadow: 0 0 16px rgba(0, 200, 255, 0.25), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
+          box-shadow: 0 0 16px var(--theme-glow-hover, rgba(0, 200, 255, 0.25)), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
         }
       `}</style>
       <PiecePreview piece={holdPiece} label="Hold" />

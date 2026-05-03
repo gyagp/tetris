@@ -72,10 +72,10 @@ export default function Board({ board, currentPiece, clearingRows, lockingCells,
         display: "inline-grid",
         gridTemplateColumns: `repeat(${BOARD_WIDTH}, ${CELL_SIZE}px)`,
         gridTemplateRows: `repeat(${BOARD_HEIGHT}, ${CELL_SIZE}px)`,
-        border: "2px solid rgba(0, 200, 255, 0.4)",
+        border: "2px solid var(--theme-border, rgba(0, 200, 255, 0.4))",
         borderRadius: 6,
         backgroundColor: "rgba(5, 0, 15, 0.9)",
-        boxShadow: "0 0 15px rgba(0, 200, 255, 0.15), 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5)",
+        boxShadow: "0 0 15px var(--theme-glow, rgba(0, 200, 255, 0.15)), 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5)",
       }}
     >
       <style>{`

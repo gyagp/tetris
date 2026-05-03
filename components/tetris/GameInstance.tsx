@@ -24,14 +24,23 @@ export interface GameInstanceHandle {
   forceGameOver: () => void;
 }
 
+export interface PlayerTheme {
+  accent: string;
+  border: string;
+  borderHover: string;
+  glow: string;
+  glowHover: string;
+}
+
 interface GameInstanceProps {
   keyBindings: KeyBindings;
   label?: string;
+  theme?: PlayerTheme;
   onLinesCleared?: (linesCleared: number, tSpin: boolean) => void;
   onGameOver?: () => void;
 }
 
-const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, onLinesCleared, onGameOver }, ref) {
+const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, theme, onLinesCleared, onGameOver }, ref) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -136,17 +145,25 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
     }
   }, [isPaused]);
 
+  const themeVars: React.CSSProperties = theme ? {
+    "--theme-accent": theme.accent,
+    "--theme-border": theme.border,
+    "--theme-border-hover": theme.borderHover,
+    "--theme-glow": theme.glow,
+    "--theme-glow-hover": theme.glowHover,
+  } as React.CSSProperties : {};
+
   return (
-    <div>
+    <div style={themeVars}>
       {label && (
         <div style={{
           textAlign: "center",
-          color: "#0ff",
+          color: theme?.accent ?? "#0ff",
           fontSize: 16,
           fontWeight: "bold",
           letterSpacing: 3,
           marginBottom: 8,
-          textShadow: "0 0 8px rgba(0,255,255,0.4)",
+          textShadow: `0 0 8px ${theme?.glow ?? "rgba(0,255,255,0.4)"}`,
         }}>
           {label}
         </div>
