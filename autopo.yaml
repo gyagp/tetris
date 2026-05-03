@@ -1,0 +1,105 @@
+project:
+  name: tetris
+  description: "A beautiful, fancy classic Tetris game for 1-2 players in the browser, deployed to Vercel"
+  path: "D:/workspace/project/gyagp/tetris"
+
+goals:
+  - id: scaffold
+    description: "Next.js project with TypeScript, Tailwind CSS, ready for Vercel deployment"
+    acceptance:
+      - "Next.js app created with TypeScript and Tailwind CSS"
+      - "npm run build succeeds"
+      - "npm run dev starts the dev server"
+      - "vercel.json or next.config configured for Vercel deployment"
+    priority: 1
+
+  - id: core-engine
+    description: "Core Tetris game engine with all standard mechanics"
+    acceptance:
+      - "10x20 game board grid implemented"
+      - "All 7 standard tetromino pieces (I, O, T, S, Z, J, L) with correct shapes and colors"
+      - "Piece movement: left, right, down, hard drop"
+      - "Piece rotation with wall kick support"
+      - "Collision detection with walls, floor, and placed pieces"
+      - "Line clearing with score calculation"
+      - "Game over detection when pieces stack to the top"
+      - "Increasing speed/level system based on lines cleared"
+      - "Next piece preview"
+      - "Hold piece functionality"
+    priority: 2
+    depends_on: [scaffold]
+
+  - id: single-player-ui
+    description: "Beautiful single-player game UI with animations and effects"
+    acceptance:
+      - "Responsive game board rendered with smooth animations"
+      - "Colorful tetromino pieces with gradient or glow effects"
+      - "Ghost piece showing where the current piece will land"
+      - "Score, level, and lines cleared display"
+      - "Next piece and hold piece preview panels"
+      - "Start screen with game title and play button"
+      - "Game over screen with final score and restart option"
+      - "Keyboard controls (arrow keys + space for hard drop + C for hold)"
+      - "Pause functionality with P key"
+      - "Smooth piece locking animation"
+      - "Line clear animation effect"
+    priority: 3
+    depends_on: [core-engine]
+
+  - id: visual-polish
+    description: "Fancy visual effects, particles, and modern design"
+    acceptance:
+      - "Background with subtle animated gradient or particle effect"
+      - "Screen shake or flash effect on line clears"
+      - "Combo counter with visual feedback for consecutive clears"
+      - "T-spin detection with special visual celebration"
+      - "Tetris (4-line clear) special effect"
+      - "Smooth CSS transitions for all UI state changes"
+      - "Modern dark theme with neon/glow aesthetic"
+      - "Responsive design that works on desktop and tablet"
+    priority: 4
+    depends_on: [single-player-ui]
+
+  - id: two-player
+    description: "Local 2-player mode with split screen"
+    acceptance:
+      - "Split screen layout with two game boards side by side"
+      - "Player 1 uses arrow keys, Player 2 uses WASD + E/Q"
+      - "Each player has independent game state, score, and level"
+      - "Garbage lines sent to opponent on multi-line clears"
+      - "Win condition when one player tops out"
+      - "Player 1 and Player 2 labels with distinct color themes"
+      - "Victory screen showing winner"
+      - "Mode selection screen: 1 Player / 2 Players"
+    priority: 5
+    depends_on: [single-player-ui]
+
+  - id: audio
+    description: "Sound effects and background music"
+    acceptance:
+      - "Background music (procedurally generated or royalty-free)"
+      - "Sound effects for: piece move, rotate, hard drop, line clear, tetris, game over"
+      - "Volume control or mute toggle"
+      - "Audio does not block page load (lazy loaded)"
+    priority: 6
+    depends_on: [single-player-ui]
+
+  - id: production-ready
+    description: "Production polish, testing, and deployment readiness"
+    acceptance:
+      - "All game features work without console errors"
+      - "npm run build produces no errors or warnings"
+      - "Mobile-friendly touch controls for single player"
+      - "High score persistence using localStorage"
+      - "SEO meta tags and Open Graph image"
+      - "Favicon and page title set"
+      - "Performance: 60fps gameplay with no jank"
+      - "README with game description, controls, and deployment instructions"
+    priority: 7
+    depends_on: [visual-polish, two-player, audio]
+
+settings:
+  max_iterations: 100
+  max_time_hours: 24
+  tech_stack: "Next.js, TypeScript, Tailwind CSS, HTML5 Canvas or React components"
+  auto_push: true
