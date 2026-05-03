@@ -68,6 +68,9 @@ describe("Home page integration", () => {
   it("pauses and resumes with P key", () => {
     render(<Home />);
     act(() => {
+      fireKey("Enter");
+    });
+    act(() => {
       fireKey("p");
     });
     expect(screen.getAllByText("PAUSED").length).toBeGreaterThanOrEqual(1);
@@ -80,6 +83,9 @@ describe("Home page integration", () => {
   it("game ticks automatically (timer fires TICK)", () => {
     render(<Home />);
     act(() => {
+      fireKey("Enter");
+    });
+    act(() => {
       vi.advanceTimersByTime(2000);
     });
     expect(screen.getAllByText(/score/i).length).toBeGreaterThanOrEqual(1);
@@ -87,6 +93,9 @@ describe("Home page integration", () => {
 
   it("does not tick when paused", () => {
     render(<Home />);
+    act(() => {
+      fireKey("Enter");
+    });
     act(() => {
       fireKey("p");
     });
@@ -99,6 +108,9 @@ describe("Home page integration", () => {
 
   it("shows game over overlay and restarts with R", () => {
     render(<Home />);
+    act(() => {
+      fireKey("Enter");
+    });
     act(() => {
       for (let i = 0; i < 50; i++) {
         fireKey(" ");

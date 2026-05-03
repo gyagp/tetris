@@ -25,4 +25,5 @@ export interface GameState {
   lines: number;
   isGameOver: boolean;
   isPaused: boolean;
+  isStarted: boolean;
 }

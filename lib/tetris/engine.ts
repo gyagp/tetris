@@ -17,7 +17,8 @@ export type GameAction =
   | { type: "HOLD" }
   | { type: "PAUSE" }
   | { type: "RESUME" }
-  | { type: "RESTART" };
+  | { type: "RESTART" }
+  | { type: "START" };
 
 function shuffleBag(): string[] {
   const bag = [...PIECE_KEYS];
@@ -67,6 +68,7 @@ export function createInitialState(): GameState {
     lines: 0,
     isGameOver: false,
     isPaused: false,
+    isStarted: false,
   };
 }
 
@@ -101,6 +103,10 @@ function lockAndAdvance(state: GameState): GameState {
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
+  if (action.type === "START" && !state.isStarted) {
+    return { ...state, isStarted: true };
+  }
+  if (!state.isStarted) return state;
   if (state.isGameOver && action.type !== "RESTART") return state;
   if (state.isPaused && action.type !== "RESUME" && action.type !== "RESTART") return state;
 
@@ -172,7 +178,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, isPaused: false };
 
     case "RESTART":
-      return createInitialState();
+      return { ...createInitialState(), isStarted: true };
 
     default:
       return state;

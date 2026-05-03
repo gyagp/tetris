@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Wire up keyboard input, game loop timer, and integrate all components into the main page
+Add game start/pause/restart flow and game over screen
 
 ## Acceptance Criteria
-- Arrow keys move/rotate pieces, space hard drops, C holds piece
-- Game ticks automatically at speed based on level
-- app/page.tsx renders full playable Tetris game
+- Game shows start screen before playing
+- P key pauses/resumes
+- Game over screen shows final score with restart option
 - npm run build succeeds
 
 ## Rules

@@ -12,11 +12,11 @@ export default function Home() {
   stateRef.current = state;
 
   useEffect(() => {
-    if (state.isGameOver || state.isPaused) return;
+    if (!state.isStarted || state.isGameOver || state.isPaused) return;
     const interval = getDropInterval(state.level);
     const timer = setInterval(() => dispatch({ type: "TICK" }), interval);
     return () => clearInterval(timer);
-  }, [state.level, state.isGameOver, state.isPaused]);
+  }, [state.level, state.isGameOver, state.isPaused, state.isStarted]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     const s = stateRef.current;
@@ -57,6 +57,10 @@ export default function Home() {
       case "R":
         if (s.isGameOver) dispatch({ type: "RESTART" });
         break;
+      case "Enter":
+        if (!s.isStarted) dispatch({ type: "START" });
+        else if (s.isGameOver) dispatch({ type: "RESTART" });
+        break;
     }
   }, []);
 
@@ -78,7 +82,25 @@ export default function Home() {
     >
       <div style={{ position: "relative" }}>
         <Board board={state.board} currentPiece={state.currentPiece} />
-        {state.isPaused && (
+        {!state.isStarted && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0,0,0,0.85)",
+              color: "#fff",
+              gap: 16,
+            }}
+          >
+            <div style={{ fontSize: 40, fontWeight: "bold" }}>TETRIS</div>
+            <div style={{ fontSize: 14 }}>Press Enter to Start</div>
+          </div>
+        )}
+        {state.isStarted && state.isPaused && (
           <div
             style={{
               position: "absolute",
@@ -112,7 +134,8 @@ export default function Home() {
             }}
           >
             <div>GAME OVER</div>
-            <div style={{ fontSize: 14, fontWeight: "normal" }}>Press R to restart</div>
+            <div style={{ fontSize: 18, fontWeight: "normal" }}>Score: {state.score}</div>
+            <div style={{ fontSize: 14, fontWeight: "normal" }}>Press Enter or R to restart</div>
           </div>
         )}
       </div>
