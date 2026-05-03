@@ -1,13 +1,13 @@
-# Autopo test Session
+# Autopo execute Session
 
 ## Work Unit
-Ensure responsive split-screen layout works at 1024px+ desktop widths
+Add tests for two-player game logic: garbage lines, win condition, input routing
 
 ## Acceptance Criteria
-- Two boards fit side by side at 1024px width without horizontal scroll
-- Boards scale appropriately at larger widths
-- Sidebars remain readable
-- npm run build succeeds
+- Tests for RECEIVE_GARBAGE action cover row insertion and game over
+- Tests for win condition detection
+- Tests for key mapping to correct player
+- All tests pass
 
 ## Rules
 # Rules
