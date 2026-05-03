@@ -3,6 +3,10 @@ type SoundType = "move" | "rotate" | "hardDrop" | "lineClear" | "tetris" | "game
 class AudioManager {
   private static instance: AudioManager | null = null;
   private ctx: AudioContext | null = null;
+  private musicPlaying = false;
+  private musicTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private musicGain: GainNode | null = null;
+  private musicBpm = 140;
 
   private constructor() {}
 
@@ -105,6 +109,76 @@ class AudioManager {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + duration);
+  }
+
+  startMusic(): void {
+    if (this.musicPlaying) return;
+    try {
+      const ctx = this.getContext();
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+      this.musicGain = ctx.createGain();
+      this.musicGain.gain.value = 0.12;
+      this.musicGain.connect(ctx.destination);
+      this.musicPlaying = true;
+      this.scheduleMusic();
+    } catch {
+      // Web Audio API unavailable
+    }
+  }
+
+  stopMusic(): void {
+    this.musicPlaying = false;
+    if (this.musicTimeoutId !== null) {
+      clearTimeout(this.musicTimeoutId);
+      this.musicTimeoutId = null;
+    }
+    if (this.musicGain) {
+      this.musicGain.disconnect();
+      this.musicGain = null;
+    }
+  }
+
+  setMusicTempo(bpm: number): void {
+    this.musicBpm = Math.max(80, Math.min(300, bpm));
+  }
+
+  private static readonly MELODY: number[] = [
+    262, 294, 330, 349, 330, 294, 262, 0,
+    349, 392, 440, 392, 349, 330, 294, 0,
+    262, 330, 392, 440, 392, 330, 262, 0,
+    349, 330, 294, 262, 294, 330, 349, 0,
+  ];
+
+  private musicStep = 0;
+
+  private scheduleMusic(): void {
+    if (!this.musicPlaying || !this.musicGain || !this.ctx) return;
+
+    const ctx = this.ctx;
+    const beatDuration = 60 / this.musicBpm;
+    const freq = AudioManager.MELODY[this.musicStep % AudioManager.MELODY.length];
+    this.musicStep++;
+
+    if (freq > 0) {
+      const osc = ctx.createOscillator();
+      const noteGain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.value = freq;
+      const dur = beatDuration * 0.8;
+      noteGain.gain.setValueAtTime(1, ctx.currentTime);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.connect(noteGain);
+      noteGain.connect(this.musicGain);
+      osc.start();
+      osc.stop(ctx.currentTime + dur);
+    }
+
+    this.musicTimeoutId = setTimeout(
+      () => this.scheduleMusic(),
+      beatDuration * 1000
+    );
   }
 
   private playArpeggio(

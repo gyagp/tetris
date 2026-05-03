@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AudioManager, SoundType } from "./audio";
 
 const mockGainNode = {
@@ -166,6 +166,137 @@ describe("AudioManager", () => {
       );
       const mgr = AudioManager.getInstance();
       expect(() => mgr.play("move")).not.toThrow();
+    });
+  });
+
+  describe("background music", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("startMusic() begins playback and creates oscillators", () => {
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      expect(ctx.createGain).toHaveBeenCalled();
+      expect(ctx.createOscillator).toHaveBeenCalled();
+    });
+
+    it("stopMusic() stops playback", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      mgr.stopMusic();
+      expect(gainNode.disconnect).toHaveBeenCalled();
+    });
+
+    it("startMusic() is idempotent when already playing", () => {
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      const callCount = ctx.createGain.mock.calls.length;
+      mgr.startMusic();
+      expect(ctx.createGain).toHaveBeenCalledTimes(callCount);
+    });
+
+    it("loops the melody by scheduling repeated notes via setTimeout", () => {
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      const initialCalls = ctx.createOscillator.mock.calls.length;
+      vi.advanceTimersByTime(2000);
+      expect(ctx.createOscillator.mock.calls.length).toBeGreaterThan(initialCalls);
+    });
+
+    it("does not schedule more notes after stopMusic()", () => {
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      vi.advanceTimersByTime(500);
+      mgr.stopMusic();
+      const callsAfterStop = ctx.createOscillator.mock.calls.length;
+      vi.advanceTimersByTime(2000);
+      expect(ctx.createOscillator.mock.calls.length).toBe(callsAfterStop);
+    });
+
+    it("setMusicTempo() clamps BPM between 80 and 300", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setMusicTempo(50);
+      // @ts-expect-error accessing private field for test
+      expect(mgr["musicBpm"]).toBe(80);
+      mgr.setMusicTempo(500);
+      // @ts-expect-error accessing private field for test
+      expect(mgr["musicBpm"]).toBe(300);
+      mgr.setMusicTempo(180);
+      // @ts-expect-error accessing private field for test
+      expect(mgr["musicBpm"]).toBe(180);
+    });
+
+    it("does not block page load (startMusic is synchronous and non-blocking)", () => {
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      const start = performance.now();
+      mgr.startMusic();
+      const elapsed = performance.now() - start;
+      expect(elapsed).toBeLessThan(50);
+      mgr.stopMusic();
+    });
+
+    it("resumes suspended AudioContext when starting music", () => {
+      const ctx = { ...mockAudioContext, resume: vi.fn(), createGain: vi.fn(() => ({
+        gain: { ...mockGainNode.gain },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      })), createOscillator: vi.fn(() => ({ ...mockOscillator })) };
+      Object.defineProperty(ctx, "state", { get: () => "suspended" });
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.startMusic();
+      expect(ctx.resume).toHaveBeenCalled();
+      mgr.stopMusic();
+    });
+
+    it("does not throw when AudioContext is unavailable for music", () => {
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(
+        () => { throw new Error("not supported"); }
+      );
+      const mgr = AudioManager.getInstance();
+      expect(() => mgr.startMusic()).not.toThrow();
     });
   });
 });
