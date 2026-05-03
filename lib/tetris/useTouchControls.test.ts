@@ -129,4 +129,97 @@ describe("useTouchControls", () => {
     expect(actions.onSoftDrop).toHaveBeenCalled();
     expect(actions.onRight).not.toHaveBeenCalled();
   });
+
+  it("does not attach listeners when enabled is false", () => {
+    const spy = vi.spyOn(el, "addEventListener");
+    renderHook(() => useTouchControls(ref, actions, false));
+    const touchCalls = spy.mock.calls.filter(([type]) =>
+      ["touchstart", "touchmove", "touchend"].includes(type as string)
+    );
+    expect(touchCalls).toHaveLength(0);
+  });
+
+  it("attaches listeners when toggled from disabled to enabled", () => {
+    const spy = vi.spyOn(el, "addEventListener");
+    const { rerender } = renderHook(
+      ({ enabled }) => useTouchControls(ref, actions, enabled),
+      { initialProps: { enabled: false } },
+    );
+    expect(
+      spy.mock.calls.filter(([t]) => t === "touchstart"),
+    ).toHaveLength(0);
+
+    rerender({ enabled: true });
+    expect(
+      spy.mock.calls.filter(([t]) => t === "touchstart"),
+    ).toHaveLength(1);
+  });
+
+  it("removes listeners when toggled from enabled to disabled", () => {
+    const removeSpy = vi.spyOn(el, "removeEventListener");
+    const { rerender } = renderHook(
+      ({ enabled }) => useTouchControls(ref, actions, enabled),
+      { initialProps: { enabled: true } },
+    );
+    rerender({ enabled: false });
+    expect(removeSpy).toHaveBeenCalledWith("touchstart", expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith("touchmove", expect.any(Function));
+    expect(removeSpy).toHaveBeenCalledWith("touchend", expect.any(Function));
+  });
+
+  it("does not attach listeners when ref is null", () => {
+    const nullRef = { current: null };
+    const spy = vi.spyOn(el, "addEventListener");
+    renderHook(() => useTouchControls(nullRef, actions, true));
+    const touchCalls = spy.mock.calls.filter(([type]) =>
+      ["touchstart", "touchmove", "touchend"].includes(type as string)
+    );
+    expect(touchCalls).toHaveLength(0);
+  });
+
+  it("does not fire actions after being disabled mid-session", () => {
+    const { rerender } = renderHook(
+      ({ enabled }) => useTouchControls(ref, actions, enabled),
+      { initialProps: { enabled: true } },
+    );
+    rerender({ enabled: false });
+    simulateSwipe(el, 100, 100, 200, 100);
+    simulateTap(el);
+    expect(actions.onRight).not.toHaveBeenCalled();
+    expect(actions.onRotate).not.toHaveBeenCalled();
+  });
+
+  it("does not allow continuous swipes after hard drop (origin not reset)", () => {
+    renderHook(() => useTouchControls(ref, actions, true));
+    el.dispatchEvent(createTouchEvent("touchstart", 100, 200));
+    el.dispatchEvent(createTouchEvent("touchmove", 100, 140)); // swipe up → hard drop
+    el.dispatchEvent(createTouchEvent("touchmove", 100, 80));  // another swipe up
+    expect(actions.onHardDrop).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows continuous downward swipes by resetting origin", () => {
+    renderHook(() => useTouchControls(ref, actions, true));
+    el.dispatchEvent(createTouchEvent("touchstart", 100, 100));
+    el.dispatchEvent(createTouchEvent("touchmove", 100, 140)); // first soft drop
+    el.dispatchEvent(createTouchEvent("touchmove", 100, 180)); // second soft drop
+    expect(actions.onSoftDrop).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not call onRotate if tap duration exceeds threshold", () => {
+    renderHook(() => useTouchControls(ref, actions, true));
+    el.dispatchEvent(createTouchEvent("touchstart", 100, 100));
+    vi.spyOn(Date, "now").mockReturnValue(Date.now() + 300);
+    el.dispatchEvent(createTouchEvent("touchend", 100, 100));
+    expect(actions.onRotate).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+
+  it("calls preventDefault on swipe touchmove events", () => {
+    renderHook(() => useTouchControls(ref, actions, true));
+    const moveEvent = createTouchEvent("touchmove", 200, 100);
+    el.dispatchEvent(createTouchEvent("touchstart", 100, 100));
+    const spy = vi.spyOn(moveEvent, "preventDefault");
+    el.dispatchEvent(moveEvent);
+    expect(spy).toHaveBeenCalled();
+  });
 });
