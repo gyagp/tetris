@@ -115,8 +115,18 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
   useEffect(() => {
     if (!state.isStarted || state.isGameOver || state.isPaused) return;
     const interval = getDropInterval(state.level);
-    const timer = setInterval(() => dispatch({ type: "TICK" }), interval);
-    return () => clearInterval(timer);
+    let lastTick = performance.now();
+    let rafId: number;
+    const loop = (now: number) => {
+      const elapsed = now - lastTick;
+      if (elapsed >= interval) {
+        lastTick = now - (elapsed % interval);
+        dispatch({ type: "TICK" });
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
   }, [state.level, state.isGameOver, state.isPaused, state.isStarted]);
 
   const handleKey = useCallback((e: KeyboardEvent) => {

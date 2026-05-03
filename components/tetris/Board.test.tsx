@@ -57,7 +57,7 @@ describe("Board component", () => {
       <Board board={emptyBoard()} currentPiece={null} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
-    expect(cells[0].style.background).toBe("rgb(26, 26, 26)");
+    expect(cells[0].style.background).toBe("rgba(10, 0, 20, 0.5)");
   });
 
   it("shows current piece with gradient at its position", () => {

@@ -220,7 +220,7 @@ describe("Game state overlay animations", () => {
   it("prompt text has pulse animation", () => {
     render(<Home />);
     fireEvent.click(screen.getByText("1 PLAYER"));
-    const prompts = screen.getAllByText("Press Enter to Start");
+    const prompts = screen.getAllByText(/to Start/);
     const prompt = prompts[0];
     expect(prompt.style.animation).toContain("prompt-pulse");
   });

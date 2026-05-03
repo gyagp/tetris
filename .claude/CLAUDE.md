@@ -1,13 +1,13 @@
-# Autopo execute Session
+# Autopo test Session
 
 ## Work Unit
-Add tests for high score localStorage persistence
+Add performance optimizations: React.memo for Board cells, requestAnimationFrame for game loop timing
 
 ## Acceptance Criteria
-- Tests verify score is saved to localStorage
-- Tests verify score is loaded on mount
-- Tests verify new high score overwrites old one
-- All tests pass
+- Board cell components are memoized
+- Game loop uses requestAnimationFrame where applicable
+- Gameplay maintains 60fps with no jank
+- No console errors
 
 ## Rules
 # Rules

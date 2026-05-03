@@ -57,6 +57,52 @@ function buildDisplayGrid(
   return grid;
 }
 
+interface CellProps {
+  color: string | null;
+  ghost: boolean;
+  isClearing: boolean;
+  isLocking: boolean;
+  trailColor: string | undefined;
+}
+
+const Cell = React.memo(function Cell({ color, ghost, isClearing, isLocking, trailColor }: CellProps) {
+  const style = color ? PIECE_STYLES[color] : null;
+
+  let background: string;
+  if (isClearing) background = "#fff";
+  else if (trailColor && !color) {
+    const ts = PIECE_STYLES[trailColor];
+    background = ts ? ts.gradient : trailColor;
+  } else if (ghost) background = color ?? "#1a1a1a";
+  else if (style) background = style.gradient;
+  else background = "rgba(10, 0, 20, 0.5)";
+
+  let animation = "none";
+  if (isClearing) animation = "line-clear-flash 400ms ease-out forwards";
+  else if (isLocking) animation = "lock-pulse 300ms ease-out forwards";
+  else if (trailColor && !color) animation = "drop-trail 200ms ease-out forwards";
+
+  return (
+    <div
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        background,
+        opacity: ghost ? 0.3 : 1,
+        border: color && !ghost
+          ? "1px solid rgba(255,255,255,0.15)"
+          : "1px solid rgba(0, 200, 255, 0.06)",
+        boxSizing: "border-box",
+        boxShadow: isClearing
+          ? "0 0 15px rgba(255,255,255,0.8)"
+          : color && !ghost ? style?.glow : "none",
+        borderRadius: color && !ghost ? 2 : 0,
+        animation,
+      }}
+    />
+  );
+});
+
 export default function Board({ board, currentPiece, clearingRows, lockingCells, hardDropTrail }: BoardProps) {
   const grid = buildDisplayGrid(board, currentPiece);
   const clearingSet = new Set(clearingRows);
@@ -97,43 +143,14 @@ export default function Board({ board, currentPiece, clearingRows, lockingCells,
       {grid.flatMap((row, y) =>
         row.map((cell, x) => {
           const key = `${y}-${x}`;
-          const isClearing = clearingSet.has(y);
-          const isLocking = lockingSet.has(key);
-          const trailColor = trailMap.get(key);
-          const style = cell.color ? PIECE_STYLES[cell.color] : null;
-
-          let background: string;
-          if (isClearing) background = "#fff";
-          else if (trailColor && !cell.color) {
-            const ts = PIECE_STYLES[trailColor];
-            background = ts ? ts.gradient : trailColor;
-          } else if (cell.ghost) background = cell.color ?? "#1a1a1a";
-          else if (style) background = style.gradient;
-          else background = "rgba(10, 0, 20, 0.5)";
-
-          let animation = "none";
-          if (isClearing) animation = "line-clear-flash 400ms ease-out forwards";
-          else if (isLocking) animation = "lock-pulse 300ms ease-out forwards";
-          else if (trailColor && !cell.color) animation = "drop-trail 200ms ease-out forwards";
-
           return (
-            <div
+            <Cell
               key={key}
-              style={{
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-                background,
-                opacity: cell.ghost ? 0.3 : 1,
-                border: cell.color && !cell.ghost
-                  ? "1px solid rgba(255,255,255,0.15)"
-                  : "1px solid rgba(0, 200, 255, 0.06)",
-                boxSizing: "border-box",
-                boxShadow: isClearing
-                  ? "0 0 15px rgba(255,255,255,0.8)"
-                  : cell.color && !cell.ghost ? style?.glow : "none",
-                borderRadius: cell.color && !cell.ghost ? 2 : 0,
-                animation,
-              }}
+              color={cell.color}
+              ghost={cell.ghost}
+              isClearing={clearingSet.has(y)}
+              isLocking={lockingSet.has(key)}
+              trailColor={trailMap.get(key)}
             />
           );
         })
