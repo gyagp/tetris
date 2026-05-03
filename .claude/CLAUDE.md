@@ -1,13 +1,15 @@
 # Autopo test Session
 
 ## Work Unit
-Add volume control and mute toggle to AudioManager
+Integrate audio triggers into GameInstance component for all game events
 
 ## Acceptance Criteria
-- setVolume(0-1) method
-- mute/unmute toggle method
-- Volume state persisted in AudioManager
-- Mute stops all audio output
+- Piece move dispatches play sound
+- Rotate dispatches play sound
+- Hard drop dispatches play sound
+- Line clear and tetris play distinct sounds
+- Game over plays sound
+- Audio lazily initialized on first user interaction
 
 ## Rules
 # Rules

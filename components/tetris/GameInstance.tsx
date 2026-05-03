@@ -5,6 +5,7 @@ import Board from "@/components/tetris/Board";
 import Sidebar from "@/components/tetris/Sidebar";
 import { gameReducer, createInitialState } from "@/lib/tetris/engine";
 import { getDropInterval } from "@/lib/tetris/scoring";
+import { AudioManager } from "@/lib/tetris/audio";
 
 interface KeyBindings {
   left: string;
@@ -60,6 +61,7 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
     if (state.clearingRows.length > 0) {
       onLinesCleared?.(state.clearingRows.length, state.tSpin);
       setShakeIntensity(state.clearingRows.length);
+      AudioManager.getInstance().play(state.clearingRows.length === 4 ? "tetris" : "lineClear");
       const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
       const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
       if (state.clearingRows.length === 4) {
@@ -83,7 +85,10 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
   const onGameOverRef = useRef(onGameOver);
   onGameOverRef.current = onGameOver;
   useEffect(() => {
-    if (state.isGameOver && state.isStarted) onGameOverRef.current?.();
+    if (state.isGameOver && state.isStarted) {
+      AudioManager.getInstance().play("gameOver");
+      onGameOverRef.current?.();
+    }
   }, [state.isGameOver, state.isStarted]);
 
   useEffect(() => {
@@ -96,12 +101,13 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
   const handleKey = useCallback((e: KeyboardEvent) => {
     const s = stateRef.current;
     const key = e.key;
-    if (key === keyBindings.left) { e.preventDefault(); dispatch({ type: "MOVE_LEFT" }); }
-    else if (key === keyBindings.right) { e.preventDefault(); dispatch({ type: "MOVE_RIGHT" }); }
-    else if (key === keyBindings.down) { e.preventDefault(); dispatch({ type: "SOFT_DROP" }); }
-    else if (key === keyBindings.rotateCW) { e.preventDefault(); dispatch({ type: "ROTATE_CW" }); }
-    else if (key === keyBindings.rotateCCW) { dispatch({ type: "ROTATE_CCW" }); }
-    else if (key === keyBindings.hardDrop) { e.preventDefault(); dispatch({ type: "HARD_DROP" }); }
+    const audio = AudioManager.getInstance();
+    if (key === keyBindings.left) { e.preventDefault(); dispatch({ type: "MOVE_LEFT" }); audio.play("move"); }
+    else if (key === keyBindings.right) { e.preventDefault(); dispatch({ type: "MOVE_RIGHT" }); audio.play("move"); }
+    else if (key === keyBindings.down) { e.preventDefault(); dispatch({ type: "SOFT_DROP" }); audio.play("move"); }
+    else if (key === keyBindings.rotateCW) { e.preventDefault(); dispatch({ type: "ROTATE_CW" }); audio.play("rotate"); }
+    else if (key === keyBindings.rotateCCW) { dispatch({ type: "ROTATE_CCW" }); audio.play("rotate"); }
+    else if (key === keyBindings.hardDrop) { e.preventDefault(); dispatch({ type: "HARD_DROP" }); audio.play("hardDrop"); }
     else if (key === keyBindings.hold) { dispatch({ type: "HOLD" }); }
     else if (key === keyBindings.pause) { dispatch(s.isPaused ? { type: "RESUME" } : { type: "PAUSE" }); }
     else if (key === keyBindings.restart) { if (s.isGameOver) dispatch({ type: "RESTART" }); }
