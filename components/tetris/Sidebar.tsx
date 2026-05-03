@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PIECE_STYLES } from "@/lib/tetris/constants";
 import type { Piece } from "@/lib/tetris/types";
+import { AudioManager } from "@/lib/tetris/audio";
 
 const MINI_CELL = 20;
 
@@ -101,6 +102,74 @@ function AnimatedValue({ value }: { value: number }) {
   );
 }
 
+function VolumeControl() {
+  const audio = AudioManager.getInstance();
+  const [muted, setMuted] = useState(audio.isMuted());
+  const [volume, setVolume] = useState(audio.getVolume());
+
+  const handleToggleMute = useCallback(() => {
+    audio.toggleMute();
+    setMuted(audio.isMuted());
+  }, [audio]);
+
+  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = parseFloat(e.target.value);
+    audio.setVolume(v);
+    setVolume(v);
+    if (v > 0 && audio.isMuted()) {
+      audio.toggleMute();
+      setMuted(false);
+    }
+  }, [audio]);
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}>
+        <button
+          onClick={handleToggleMute}
+          aria-label={muted ? "Unmute" : "Mute"}
+          style={{
+            background: "rgba(10, 0, 20, 0.7)",
+            border: "1px solid var(--theme-border, rgba(0, 200, 255, 0.3))",
+            borderRadius: 6,
+            color: muted ? "rgba(255,255,255,0.4)" : "var(--theme-accent, #0ff)",
+            fontSize: 18,
+            width: 36,
+            height: 36,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textShadow: muted ? "none" : "0 0 6px var(--theme-glow, rgba(0, 255, 255, 0.4))",
+            boxShadow: "0 0 8px var(--theme-glow, rgba(0, 200, 255, 0.1))",
+            transition: "all 0.2s ease",
+          }}
+        >
+          {muted ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={muted ? 0 : volume}
+          onChange={handleVolumeChange}
+          aria-label="Volume"
+          style={{
+            flex: 1,
+            accentColor: "var(--theme-accent, #0ff)",
+            cursor: "pointer",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines }: SidebarProps) {
   const panelStyle: React.CSSProperties = {
     background: "rgba(10, 0, 20, 0.7)",
@@ -155,6 +224,7 @@ export default function Sidebar({ className, nextPiece, holdPiece, score, level,
         <div style={labelStyle}>Lines</div>
         <div style={valueStyle}><AnimatedValue value={lines} /></div>
       </div>
+      <VolumeControl />
     </div>
   );
 }

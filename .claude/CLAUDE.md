@@ -1,15 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Integrate audio triggers into GameInstance component for all game events
+Add volume/mute UI control to Sidebar component
 
 ## Acceptance Criteria
-- Piece move dispatches play sound
-- Rotate dispatches play sound
-- Hard drop dispatches play sound
-- Line clear and tetris play distinct sounds
-- Game over plays sound
-- Audio lazily initialized on first user interaction
+- Mute/unmute button visible in sidebar
+- Volume slider or toggle works
+- UI reflects current mute/volume state
 
 ## Rules
 # Rules
