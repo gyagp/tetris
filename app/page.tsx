@@ -98,7 +98,9 @@ export default function Home() {
         justifyContent: "center",
         alignItems: "flex-start",
         minHeight: "100vh",
-        backgroundColor: "#000",
+        background: "linear-gradient(135deg, #0a0014, #001a1a, #0a0020, #001414)",
+        backgroundSize: "400% 400%",
+        animation: "bg-gradient-shift 15s ease infinite",
         paddingTop: 40,
         overflow: "hidden",
       }}
@@ -134,6 +136,11 @@ export default function Home() {
           .game-container {
             transform: scale(calc((360px - 20px) / 310));
           }
+        }
+        @keyframes bg-gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
         @keyframes overlay-fade-scale {
           from { opacity: 0; transform: scale(0.9); }

@@ -1,12 +1,11 @@
 # Autopo test Session
 
 ## Work Unit
-Ensure responsive layout works across screen sizes
+Add animated gradient background effect behind the game board
 
 ## Acceptance Criteria
-- Game board and sidebar scale appropriately on small screens
-- Layout remains usable at 360px width minimum
-- No horizontal scrolling on standard screen sizes
+- Background has a subtle animated gradient or particle-like effect
+- Animation is smooth and does not impact game performance
 - npm run build succeeds
 
 ## Rules
