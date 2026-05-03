@@ -30,4 +30,6 @@ export interface GameState {
   lockingCells: { x: number; y: number }[];
   hardDropTrail: { x: number; y: number; color: string }[];
   combo: number;
+  lastAction: string | null;
+  tSpin: boolean;
 }

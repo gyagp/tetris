@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add combo counter UI with visual feedback
+Add T-spin detection logic to game engine
 
 ## Acceptance Criteria
-- Combo counter displays on screen when combo >= 2
-- Visual feedback escalates with higher combos (color, size, or glow)
-- Counter animates in and fades out
+- T-spin is detected when T piece locks after rotation
+- Correctly identifies T-spin using 3-corner rule
+- T-spin state is stored in game state for display
 - npm run build succeeds
 
 ## Rules

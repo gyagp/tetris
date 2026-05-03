@@ -74,6 +74,8 @@ export function createInitialState(): GameState {
     lockingCells: [],
     hardDropTrail: [],
     combo: 0,
+    lastAction: null,
+    tSpin: false,
   };
 }
 
@@ -89,9 +91,33 @@ function getPieceCells(piece: Piece): { x: number; y: number }[] {
   return cells;
 }
 
+function isTSpin(board: GameState["board"], piece: Piece, lastAction: string | null): boolean {
+  if (lastAction !== "ROTATE_CW" && lastAction !== "ROTATE_CCW") return false;
+  if (findPieceKey(piece) !== "T") return false;
+
+  const cx = piece.position.x + 1;
+  const cy = piece.position.y + 1;
+
+  const corners = [
+    [cx - 1, cy - 1],
+    [cx + 1, cy - 1],
+    [cx - 1, cy + 1],
+    [cx + 1, cy + 1],
+  ];
+
+  let filled = 0;
+  for (const [x, y] of corners) {
+    if (x < 0 || x >= BOARD_WIDTH || y < 0 || y >= BOARD_HEIGHT || board[y][x] !== null) {
+      filled++;
+    }
+  }
+  return filled >= 3;
+}
+
 function lockAndAdvance(state: GameState): GameState {
   if (!state.currentPiece) return state;
 
+  const tSpin = isTSpin(state.board, state.currentPiece, state.lastAction);
   const lockingCells = getPieceCells(state.currentPiece);
   const boardAfterPlace = placePiece(state.board, state.currentPiece);
   const fullRows = findFullRows(boardAfterPlace);
@@ -103,11 +129,12 @@ function lockAndAdvance(state: GameState): GameState {
       currentPiece: null,
       clearingRows: fullRows,
       lockingCells,
+      tSpin,
     };
   }
 
   const result = advanceWithoutClear(state, boardAfterPlace);
-  return { ...result, lockingCells, combo: 0 };
+  return { ...result, lockingCells, combo: 0, tSpin };
 }
 
 function advanceWithoutClear(state: GameState, board: GameState["board"]): GameState {
@@ -165,31 +192,31 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!moved) {
         return lockAndAdvance(state);
       }
-      return { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] };
+      return { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [], lastAction: "TICK" };
     }
 
     case "MOVE_LEFT": {
       if (!state.currentPiece) return state;
       const moved = movePiece(state.board, state.currentPiece, "left");
-      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] } : state;
+      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [], lastAction: "MOVE_LEFT" } : state;
     }
 
     case "MOVE_RIGHT": {
       if (!state.currentPiece) return state;
       const moved = movePiece(state.board, state.currentPiece, "right");
-      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] } : state;
+      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [], lastAction: "MOVE_RIGHT" } : state;
     }
 
     case "ROTATE_CW": {
       if (!state.currentPiece) return state;
       const rotated = rotatePiece(state.board, state.currentPiece, true);
-      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [] } : state;
+      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [], lastAction: "ROTATE_CW" } : state;
     }
 
     case "ROTATE_CCW": {
       if (!state.currentPiece) return state;
       const rotated = rotatePiece(state.board, state.currentPiece, false);
-      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [] } : state;
+      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [], lastAction: "ROTATE_CCW" } : state;
     }
 
     case "HARD_DROP": {

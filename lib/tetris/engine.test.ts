@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createInitialState, gameReducer } from "./engine";
-import { GameState } from "./types";
-import { BOARD_WIDTH, BOARD_HEIGHT } from "./constants";
+import { GameState, Piece } from "./types";
+import { BOARD_WIDTH, BOARD_HEIGHT, TETROMINOES } from "./constants";
+import { createBoard } from "./board";
 
 function startGame(): GameState {
   const state = createInitialState();
@@ -70,5 +71,186 @@ describe("combo counter", () => {
     state = { ...state, combo: 5 };
     const after = gameReducer(state, { type: "RESTART" });
     expect(after.combo).toBe(0);
+  });
+});
+
+function makeTPiece(position: { x: number; y: number }): Piece {
+  return {
+    shape: TETROMINOES.T.shape.map((r) => [...r]),
+    color: TETROMINOES.T.color,
+    position,
+    rotationState: 0,
+  };
+}
+
+function makeState(overrides: Partial<GameState> = {}): GameState {
+  return {
+    ...createInitialState(),
+    isStarted: true,
+    ...overrides,
+  };
+}
+
+describe("T-spin detection", () => {
+  it("detects T-spin when 3 corners are filled after rotation", () => {
+    const board = createBoard();
+    const px = 3;
+    const py = 17;
+
+    // Fill 3 of 4 corners around T center (px+1, py+1)
+    board[py][px] = "#fff";
+    board[py][px + 2] = "#fff";
+    board[py + 2][px] = "#fff";
+
+    // Block downward movement
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (py + 3 < BOARD_HEIGHT) board[py + 3][x] = "#fff";
+    }
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (board[py + 2][x] === null && x !== px + 1) {
+        board[py + 2][x] = "#fff";
+      }
+    }
+
+    const state = makeState({
+      board,
+      currentPiece: makeTPiece({ x: px, y: py }),
+      lastAction: "ROTATE_CW",
+    });
+
+    const result = gameReducer(state, { type: "TICK" });
+    expect(result.tSpin).toBe(true);
+  });
+
+  it("does not detect T-spin when last action was not rotation", () => {
+    const board = createBoard();
+    const px = 3;
+    const py = 17;
+
+    board[py][px] = "#fff";
+    board[py][px + 2] = "#fff";
+    board[py + 2][px] = "#fff";
+
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (board[py + 2][x] === null && x !== px + 1) board[py + 2][x] = "#fff";
+    }
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (py + 3 < BOARD_HEIGHT) board[py + 3][x] = "#fff";
+    }
+
+    const state = makeState({
+      board,
+      currentPiece: makeTPiece({ x: px, y: py }),
+      lastAction: "MOVE_LEFT",
+    });
+
+    const result = gameReducer(state, { type: "TICK" });
+    expect(result.tSpin).toBe(false);
+  });
+
+  it("does not detect T-spin for non-T pieces", () => {
+    const board = createBoard();
+    const px = 3;
+    const py = 17;
+
+    board[py][px] = "#fff";
+    board[py][px + 2] = "#fff";
+    board[py + 2][px] = "#fff";
+
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (board[py + 2][x] === null) board[py + 2][x] = "#fff";
+    }
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (py + 3 < BOARD_HEIGHT) board[py + 3][x] = "#fff";
+    }
+
+    const sPiece: Piece = {
+      shape: TETROMINOES.S.shape.map((r) => [...r]),
+      color: TETROMINOES.S.color,
+      position: { x: px, y: py },
+      rotationState: 0,
+    };
+
+    const state = makeState({
+      board,
+      currentPiece: sPiece,
+      lastAction: "ROTATE_CW",
+    });
+
+    const result = gameReducer(state, { type: "TICK" });
+    expect(result.tSpin).toBe(false);
+  });
+
+  it("does not detect T-spin when fewer than 3 corners are filled", () => {
+    const board = createBoard();
+    const px = 3;
+    const py = 17;
+
+    // Only 2 corners filled (top-left, top-right)
+    board[py][px] = "#fff";
+    board[py][px + 2] = "#fff";
+    // Leave bottom corners empty
+
+    // Block downward movement without filling bottom corners
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (py + 3 < BOARD_HEIGHT) board[py + 3][x] = "#fff";
+    }
+    // Fill row py+2 but skip BOTH bottom corners and the T center column
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (x === px || x === px + 1 || x === px + 2) continue;
+      board[py + 2][x] = "#fff";
+    }
+
+    const state = makeState({
+      board,
+      currentPiece: makeTPiece({ x: px, y: py }),
+      lastAction: "ROTATE_CW",
+    });
+
+    const result = gameReducer(state, { type: "TICK" });
+    expect(result.tSpin).toBe(false);
+  });
+
+  it("counts wall as filled corners for T-spin", () => {
+    const board = createBoard();
+    const px = 0;
+    const py = BOARD_HEIGHT - 3;
+
+    // Left wall gives 2 filled corners, add 1 more
+    board[py][px + 2] = "#fff";
+
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (py + 3 < BOARD_HEIGHT) board[py + 3][x] = "#fff";
+    }
+    for (let x = 0; x < BOARD_WIDTH; x++) {
+      if (board[py + 2][x] === null && x !== px + 1) board[py + 2][x] = "#fff";
+    }
+
+    const state = makeState({
+      board,
+      currentPiece: makeTPiece({ x: px, y: py }),
+      lastAction: "ROTATE_CCW",
+    });
+
+    const result = gameReducer(state, { type: "TICK" });
+    expect(result.tSpin).toBe(true);
+  });
+
+  it("stores tSpin in initial game state as false", () => {
+    const state = createInitialState();
+    expect(state).toHaveProperty("tSpin");
+    expect(state.tSpin).toBe(false);
+  });
+
+  it("tracks lastAction as ROTATE_CW after clockwise rotation", () => {
+    const state = makeState({ currentPiece: makeTPiece({ x: 4, y: 0 }) });
+    const result = gameReducer(state, { type: "ROTATE_CW" });
+    expect(result.lastAction).toBe("ROTATE_CW");
+  });
+
+  it("tracks lastAction as ROTATE_CCW after counter-clockwise rotation", () => {
+    const state = makeState({ currentPiece: makeTPiece({ x: 4, y: 0 }) });
+    const result = gameReducer(state, { type: "ROTATE_CCW" });
+    expect(result.lastAction).toBe("ROTATE_CCW");
   });
 });
