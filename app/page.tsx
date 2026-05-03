@@ -299,14 +299,15 @@ export default function Home() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.85)",
+              backgroundColor: "rgba(5, 0, 20, 0.9)",
+              border: "1px solid rgba(0, 200, 255, 0.2)",
               color: "#fff",
               gap: 16,
               animation: "overlay-fade-scale 0.5s ease-out",
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite" }}>TETRIS</div>
-            <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite" }}>Press Enter to Start</div>
+            <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite", letterSpacing: 6 }}>TETRIS</div>
+            <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>Press Enter to Start</div>
           </div>
         )}
         {showPause && (
@@ -317,14 +318,14 @@ export default function Home() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.7)",
+              backgroundColor: "rgba(5, 0, 20, 0.85)",
               color: "#fff",
               fontSize: 32,
               fontWeight: "bold",
               animation: pauseExiting ? "overlay-fade-out 0.3s ease-in forwards" : "overlay-fade-scale 0.3s ease-out",
             }}
           >
-            <div style={{ animation: "title-shimmer 2.5s ease-in-out infinite" }}>PAUSED</div>
+            <div style={{ fontSize: 32, animation: "title-shimmer 2.5s ease-in-out infinite", letterSpacing: 4 }}>PAUSED</div>
           </div>
         )}
         {state.isGameOver && (
@@ -336,7 +337,7 @@ export default function Home() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(0,0,0,0.7)",
+              backgroundColor: "rgba(5, 0, 20, 0.85)",
               color: "#fff",
               fontSize: 28,
               fontWeight: "bold",
@@ -344,9 +345,9 @@ export default function Home() {
               animation: "overlay-fade-scale 0.4s ease-out",
             }}
           >
-            <div style={{ animation: "game-over-entrance 0.6s ease-out" }}>GAME OVER</div>
-            <div style={{ fontSize: 18, fontWeight: "normal" }}>Score: {state.score}</div>
-            <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite" }}>Press Enter or R to restart</div>
+            <div style={{ animation: "game-over-entrance 0.6s ease-out", color: "#ff3366", textShadow: "0 0 10px rgba(255, 51, 102, 0.6), 0 0 30px rgba(255, 51, 102, 0.3)" }}>GAME OVER</div>
+            <div style={{ fontSize: 18, fontWeight: "normal", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>Score: {state.score}</div>
+            <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite", color: "rgba(200, 130, 255, 0.8)" }}>Press Enter or R to restart</div>
           </div>
         )}
         {comboDisplay > 0 && (() => {

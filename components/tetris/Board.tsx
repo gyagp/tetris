@@ -72,10 +72,10 @@ export default function Board({ board, currentPiece, clearingRows, lockingCells,
         display: "inline-grid",
         gridTemplateColumns: `repeat(${BOARD_WIDTH}, ${CELL_SIZE}px)`,
         gridTemplateRows: `repeat(${BOARD_HEIGHT}, ${CELL_SIZE}px)`,
-        border: "3px solid #444",
-        borderRadius: 4,
-        backgroundColor: "#0a0a0a",
-        boxShadow: "0 0 20px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.5)",
+        border: "2px solid rgba(0, 200, 255, 0.4)",
+        borderRadius: 6,
+        backgroundColor: "rgba(5, 0, 15, 0.9)",
+        boxShadow: "0 0 15px rgba(0, 200, 255, 0.15), 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5)",
       }}
     >
       <style>{`
@@ -109,7 +109,7 @@ export default function Board({ board, currentPiece, clearingRows, lockingCells,
             background = ts ? ts.gradient : trailColor;
           } else if (cell.ghost) background = cell.color ?? "#1a1a1a";
           else if (style) background = style.gradient;
-          else background = "#1a1a1a";
+          else background = "rgba(10, 0, 20, 0.5)";
 
           let animation = "none";
           if (isClearing) animation = "line-clear-flash 400ms ease-out forwards";
@@ -126,7 +126,7 @@ export default function Board({ board, currentPiece, clearingRows, lockingCells,
                 opacity: cell.ghost ? 0.3 : 1,
                 border: cell.color && !cell.ghost
                   ? "1px solid rgba(255,255,255,0.15)"
-                  : "1px solid #222",
+                  : "1px solid rgba(0, 200, 255, 0.06)",
                 boxSizing: "border-box",
                 boxShadow: isClearing
                   ? "0 0 15px rgba(255,255,255,0.8)"

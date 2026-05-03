@@ -1,11 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add Tetris (4-line clear) special effect
+Apply modern neon/glow dark theme to all UI elements
 
 ## Acceptance Criteria
-- 4-line clear triggers a distinct special effect (flash, particles, or screen-wide animation)
-- Effect is visually more intense than single/double/triple clears
+- Sidebar, overlays, and score display use consistent neon/glow aesthetic
+- Color palette is cohesive with cyan/magenta/purple accents
+- Borders, text, and panels have subtle glow effects
 - npm run build succeeds
 
 ## Rules
