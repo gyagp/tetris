@@ -1,12 +1,11 @@
 # Autopo execute Session
 
 ## Work Unit
-Install npm dependencies and verify the existing Next.js/TypeScript/Tailwind setup builds and runs
+Configure Vercel deployment settings in next.config.ts
 
 ## Acceptance Criteria
-- npm install completes successfully
-- npm run build succeeds
-- npm run dev starts without errors
+- next.config.ts has Vercel-compatible configuration
+- npm run build still succeeds
 
 ## Rules
 # Rules
