@@ -157,6 +157,163 @@ describe("AudioManager", () => {
     });
   });
 
+  describe("setVolume", () => {
+    it("sets volume and returns it via getVolume", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(0.5);
+      expect(mgr.getVolume()).toBe(0.5);
+    });
+
+    it("clamps volume to 0 when given negative value", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(-1);
+      expect(mgr.getVolume()).toBe(0);
+    });
+
+    it("clamps volume to 1 when given value above 1", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(5);
+      expect(mgr.getVolume()).toBe(1);
+    });
+
+    it("sets volume to exactly 0", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(0);
+      expect(mgr.getVolume()).toBe(0);
+    });
+
+    it("sets volume to exactly 1", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(1);
+      expect(mgr.getVolume()).toBe(1);
+    });
+
+    it("updates masterGain when context is initialized", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.play("move"); // initializes context
+      mgr.setVolume(0.3);
+      expect(gainNode.gain.value).toBe(0.3);
+    });
+
+    it("does not update masterGain when muted", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.play("move");
+      mgr.toggleMute(); // mute -> gain becomes 0
+      gainNode.gain.value = 0;
+      mgr.setVolume(0.7);
+      expect(gainNode.gain.value).toBe(0); // stays 0 because muted
+      expect(mgr.getVolume()).toBe(0.7); // but volume is stored
+    });
+  });
+
+  describe("mute/unmute toggle", () => {
+    it("toggleMute returns true when muting", () => {
+      const mgr = AudioManager.getInstance();
+      expect(mgr.toggleMute()).toBe(true);
+    });
+
+    it("toggleMute returns false when unmuting", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.toggleMute(); // mute
+      expect(mgr.toggleMute()).toBe(false); // unmute
+    });
+
+    it("isMuted reflects muted state", () => {
+      const mgr = AudioManager.getInstance();
+      expect(mgr.isMuted()).toBe(false);
+      mgr.toggleMute();
+      expect(mgr.isMuted()).toBe(true);
+      mgr.toggleMute();
+      expect(mgr.isMuted()).toBe(false);
+    });
+
+    it("muting sets masterGain to 0", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.play("move");
+      mgr.setVolume(0.8);
+      mgr.toggleMute();
+      expect(gainNode.gain.value).toBe(0);
+    });
+
+    it("unmuting restores volume to previous level", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.play("move");
+      mgr.setVolume(0.6);
+      mgr.toggleMute();
+      expect(gainNode.gain.value).toBe(0);
+      mgr.toggleMute();
+      expect(gainNode.gain.value).toBe(0.6);
+    });
+  });
+
+  describe("volume state persistence in AudioManager", () => {
+    it("volume persists across multiple plays", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(0.4);
+      mgr.play("move");
+      mgr.play("rotate");
+      expect(mgr.getVolume()).toBe(0.4);
+    });
+
+    it("muted state persists across multiple plays", () => {
+      const mgr = AudioManager.getInstance();
+      mgr.toggleMute();
+      mgr.play("move");
+      mgr.play("rotate");
+      expect(mgr.isMuted()).toBe(true);
+    });
+
+    it("volume set before context init applies when context is created", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.setVolume(0.25);
+      mgr.play("move"); // creates context
+      expect(gainNode.gain.value).toBe(0.25);
+    });
+
+    it("mute set before context init applies when context is created", () => {
+      const gainNode = {
+        gain: { ...mockGainNode.gain, value: 1 },
+        connect: vi.fn(),
+      };
+      const ctx = { ...mockAudioContext, createGain: vi.fn(() => gainNode) };
+      (AudioContext as unknown as ReturnType<typeof vi.fn>).mockReturnValueOnce(ctx);
+      const mgr = AudioManager.getInstance();
+      mgr.toggleMute();
+      mgr.play("move"); // creates context
+      expect(gainNode.gain.value).toBe(0);
+    });
+  });
+
   describe("error resilience", () => {
     it("does not throw when AudioContext constructor fails", () => {
       (AudioContext as unknown as ReturnType<typeof vi.fn>).mockImplementationOnce(

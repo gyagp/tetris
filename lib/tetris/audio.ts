@@ -3,6 +3,9 @@ type SoundType = "move" | "rotate" | "hardDrop" | "lineClear" | "tetris" | "game
 class AudioManager {
   private static instance: AudioManager | null = null;
   private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private volume = 1;
+  private muted = false;
   private musicPlaying = false;
   private musicTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private musicGain: GainNode | null = null;
@@ -20,8 +23,39 @@ class AudioManager {
   private getContext(): AudioContext {
     if (!this.ctx) {
       this.ctx = new AudioContext();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = this.muted ? 0 : this.volume;
+      this.masterGain.connect(this.ctx.destination);
     }
     return this.ctx;
+  }
+
+  private getMasterGain(): GainNode {
+    this.getContext();
+    return this.masterGain!;
+  }
+
+  setVolume(value: number): void {
+    this.volume = Math.max(0, Math.min(1, value));
+    if (this.masterGain && !this.muted) {
+      this.masterGain.gain.value = this.volume;
+    }
+  }
+
+  getVolume(): number {
+    return this.volume;
+  }
+
+  toggleMute(): boolean {
+    this.muted = !this.muted;
+    if (this.masterGain) {
+      this.masterGain.gain.value = this.muted ? 0 : this.volume;
+    }
+    return this.muted;
+  }
+
+  isMuted(): boolean {
+    return this.muted;
   }
 
   play(sound: SoundType): void {
@@ -69,7 +103,7 @@ class AudioManager {
     gain.gain.setValueAtTime(volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(this.getMasterGain());
     osc.start();
     osc.stop(ctx.currentTime + duration);
   }
@@ -87,7 +121,7 @@ class AudioManager {
     gain.gain.setValueAtTime(volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     source.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(this.getMasterGain());
     source.start();
   }
 
@@ -106,7 +140,7 @@ class AudioManager {
     gain.gain.setValueAtTime(volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(this.getMasterGain());
     osc.start();
     osc.stop(ctx.currentTime + duration);
   }
@@ -120,7 +154,7 @@ class AudioManager {
       }
       this.musicGain = ctx.createGain();
       this.musicGain.gain.value = 0.12;
-      this.musicGain.connect(ctx.destination);
+      this.musicGain.connect(this.getMasterGain());
       this.musicPlaying = true;
       this.scheduleMusic();
     } catch {
@@ -197,7 +231,7 @@ class AudioManager {
       gain.gain.linearRampToValueAtTime(volume, start + 0.005);
       gain.gain.exponentialRampToValueAtTime(0.001, start + noteLength);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(this.getMasterGain());
       osc.start(start);
       osc.stop(start + noteLength);
     });
