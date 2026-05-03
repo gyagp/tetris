@@ -11,6 +11,8 @@ interface BoardProps {
   board: BoardType;
   currentPiece: Piece | null;
   clearingRows: number[];
+  lockingCells: { x: number; y: number }[];
+  hardDropTrail: { x: number; y: number; color: string }[];
 }
 
 function buildDisplayGrid(
@@ -55,9 +57,14 @@ function buildDisplayGrid(
   return grid;
 }
 
-export default function Board({ board, currentPiece, clearingRows }: BoardProps) {
+export default function Board({ board, currentPiece, clearingRows, lockingCells, hardDropTrail }: BoardProps) {
   const grid = buildDisplayGrid(board, currentPiece);
   const clearingSet = new Set(clearingRows);
+  const lockingSet = new Set(lockingCells.map(c => `${c.y}-${c.x}`));
+  const trailMap = new Map<string, string>();
+  for (const t of hardDropTrail) {
+    trailMap.set(`${t.y}-${t.x}`, t.color);
+  }
 
   return (
     <div
@@ -78,24 +85,44 @@ export default function Board({ board, currentPiece, clearingRows }: BoardProps)
           60% { background: #fff; opacity: 0.5; }
           100% { background: transparent; opacity: 0; }
         }
+        @keyframes lock-pulse {
+          0% { box-shadow: inset 0 0 8px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.6); }
+          100% { box-shadow: none; }
+        }
+        @keyframes drop-trail {
+          0% { opacity: 0.5; }
+          100% { opacity: 0; }
+        }
       `}</style>
       {grid.flatMap((row, y) =>
         row.map((cell, x) => {
+          const key = `${y}-${x}`;
           const isClearing = clearingSet.has(y);
+          const isLocking = lockingSet.has(key);
+          const trailColor = trailMap.get(key);
           const style = cell.color ? PIECE_STYLES[cell.color] : null;
+
+          let background: string;
+          if (isClearing) background = "#fff";
+          else if (trailColor && !cell.color) {
+            const ts = PIECE_STYLES[trailColor];
+            background = ts ? ts.gradient : trailColor;
+          } else if (cell.ghost) background = cell.color ?? "#1a1a1a";
+          else if (style) background = style.gradient;
+          else background = "#1a1a1a";
+
+          let animation = "none";
+          if (isClearing) animation = "line-clear-flash 400ms ease-out forwards";
+          else if (isLocking) animation = "lock-pulse 300ms ease-out forwards";
+          else if (trailColor && !cell.color) animation = "drop-trail 200ms ease-out forwards";
+
           return (
             <div
-              key={`${y}-${x}`}
+              key={key}
               style={{
                 width: CELL_SIZE,
                 height: CELL_SIZE,
-                background: isClearing
-                  ? "#fff"
-                  : cell.ghost
-                    ? cell.color ?? "#1a1a1a"
-                    : style
-                      ? style.gradient
-                      : "#1a1a1a",
+                background,
                 opacity: cell.ghost ? 0.3 : 1,
                 border: cell.color && !cell.ghost
                   ? "1px solid rgba(255,255,255,0.15)"
@@ -105,7 +132,7 @@ export default function Board({ board, currentPiece, clearingRows }: BoardProps)
                   ? "0 0 15px rgba(255,255,255,0.8)"
                   : cell.color && !cell.ghost ? style?.glow : "none",
                 borderRadius: cell.color && !cell.ghost ? 2 : 0,
-                animation: isClearing ? "line-clear-flash 400ms ease-out forwards" : "none",
+                animation,
               }}
             />
           );

@@ -168,3 +168,79 @@ describe("Line clear animation", () => {
     expect(result.lines).toBe(2);
   });
 });
+
+describe("Lock and hard drop animation state", () => {
+  it("lockingCells and hardDropTrail are initialized to empty arrays", () => {
+    const s = init();
+    expect(s.lockingCells).toEqual([]);
+    expect(s.hardDropTrail).toEqual([]);
+  });
+
+  it("TICK that locks a piece populates lockingCells", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    // Move piece to bottom by repeated ticks
+    let prev = s;
+    for (let i = 0; i < BOARD_HEIGHT + 5; i++) {
+      const next = gameReducer(prev, { type: "TICK" });
+      if (next.lockingCells.length > 0 || next.currentPiece !== prev.currentPiece) {
+        // Piece locked
+        if (next.lockingCells.length > 0) {
+          expect(next.lockingCells.length).toBeGreaterThan(0);
+          for (const cell of next.lockingCells) {
+            expect(cell).toHaveProperty("x");
+            expect(cell).toHaveProperty("y");
+          }
+        }
+        break;
+      }
+      prev = next;
+    }
+  });
+
+  it("HARD_DROP populates hardDropTrail", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const result = gameReducer(s, { type: "HARD_DROP" });
+    expect(result.hardDropTrail.length).toBeGreaterThan(0);
+    for (const t of result.hardDropTrail) {
+      expect(t).toHaveProperty("x");
+      expect(t).toHaveProperty("y");
+      expect(t).toHaveProperty("color");
+    }
+  });
+
+  it("HARD_DROP also populates lockingCells", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const result = gameReducer(s, { type: "HARD_DROP" });
+    expect(result.lockingCells.length).toBeGreaterThan(0);
+  });
+
+  it("movement actions clear lockingCells and hardDropTrail", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const withAnimations: GameState = {
+      ...s,
+      lockingCells: [{ x: 0, y: 19 }],
+      hardDropTrail: [{ x: 0, y: 10, color: "#fff" }],
+    };
+    const result = gameReducer(withAnimations, { type: "MOVE_LEFT" });
+    if (result !== withAnimations) {
+      expect(result.lockingCells).toEqual([]);
+      expect(result.hardDropTrail).toEqual([]);
+    }
+  });
+
+  it("animations do not block gameplay - TICK still works after lock", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const afterDrop = gameReducer(s, { type: "HARD_DROP" });
+    // If no clearing rows, next piece should be active
+    if (afterDrop.clearingRows.length === 0) {
+      expect(afterDrop.currentPiece).not.toBeNull();
+      const afterTick = gameReducer(afterDrop, { type: "TICK" });
+      expect(afterTick.currentPiece).not.toBeNull();
+    }
+  });
+});

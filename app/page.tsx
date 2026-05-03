@@ -88,7 +88,7 @@ export default function Home() {
       }}
     >
       <div style={{ position: "relative" }}>
-        <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} />
+        <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
         {!state.isStarted && (
           <div
             style={{

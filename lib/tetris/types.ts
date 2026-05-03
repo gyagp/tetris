@@ -27,4 +27,6 @@ export interface GameState {
   isPaused: boolean;
   isStarted: boolean;
   clearingRows: number[];
+  lockingCells: { x: number; y: number }[];
+  hardDropTrail: { x: number; y: number; color: string }[];
 }

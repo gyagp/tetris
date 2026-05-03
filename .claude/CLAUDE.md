@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add line clear animation effect
+Add smooth piece locking animation and hard drop visual effect
 
 ## Acceptance Criteria
-- When lines are cleared, a visible flash/dissolve animation plays before rows disappear
-- Animation completes in ~300-500ms
-- Rows above shift down smoothly after animation
+- When a piece locks into place, a brief flash or pulse animation plays on the locked cells
+- Hard drop shows a brief trail or impact effect
+- Animations do not interfere with gameplay timing
 - npm run build succeeds
 
 ## Rules

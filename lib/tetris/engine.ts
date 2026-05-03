@@ -1,5 +1,5 @@
 import { GameState, Piece } from "./types";
-import { BOARD_WIDTH, TETROMINOES } from "./constants";
+import { BOARD_WIDTH, BOARD_HEIGHT, TETROMINOES } from "./constants";
 import { createBoard, placePiece } from "./board";
 import { movePiece, hardDrop, rotatePiece } from "./movement";
 import { clearLines, findFullRows, calculateScore, calculateLevel, checkGameOver } from "./scoring";
@@ -71,12 +71,27 @@ export function createInitialState(): GameState {
     isPaused: false,
     isStarted: false,
     clearingRows: [],
+    lockingCells: [],
+    hardDropTrail: [],
   };
+}
+
+function getPieceCells(piece: Piece): { x: number; y: number }[] {
+  const cells: { x: number; y: number }[] = [];
+  for (let sy = 0; sy < piece.shape.length; sy++) {
+    for (let sx = 0; sx < piece.shape[sy].length; sx++) {
+      if (piece.shape[sy][sx]) {
+        cells.push({ x: piece.position.x + sx, y: piece.position.y + sy });
+      }
+    }
+  }
+  return cells;
 }
 
 function lockAndAdvance(state: GameState): GameState {
   if (!state.currentPiece) return state;
 
+  const lockingCells = getPieceCells(state.currentPiece);
   const boardAfterPlace = placePiece(state.board, state.currentPiece);
   const fullRows = findFullRows(boardAfterPlace);
 
@@ -86,10 +101,12 @@ function lockAndAdvance(state: GameState): GameState {
       board: boardAfterPlace,
       currentPiece: null,
       clearingRows: fullRows,
+      lockingCells,
     };
   }
 
-  return advanceWithoutClear(state, boardAfterPlace);
+  const result = advanceWithoutClear(state, boardAfterPlace);
+  return { ...result, lockingCells };
 }
 
 function advanceWithoutClear(state: GameState, board: GameState["board"]): GameState {
@@ -109,6 +126,8 @@ function advanceWithoutClear(state: GameState, board: GameState["board"]): GameS
     bag,
     canHold: true,
     clearingRows: [],
+    lockingCells: [],
+    hardDropTrail: [],
   };
 }
 
@@ -145,37 +164,52 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!moved) {
         return lockAndAdvance(state);
       }
-      return { ...state, currentPiece: moved };
+      return { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] };
     }
 
     case "MOVE_LEFT": {
       if (!state.currentPiece) return state;
       const moved = movePiece(state.board, state.currentPiece, "left");
-      return moved ? { ...state, currentPiece: moved } : state;
+      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] } : state;
     }
 
     case "MOVE_RIGHT": {
       if (!state.currentPiece) return state;
       const moved = movePiece(state.board, state.currentPiece, "right");
-      return moved ? { ...state, currentPiece: moved } : state;
+      return moved ? { ...state, currentPiece: moved, lockingCells: [], hardDropTrail: [] } : state;
     }
 
     case "ROTATE_CW": {
       if (!state.currentPiece) return state;
       const rotated = rotatePiece(state.board, state.currentPiece, true);
-      return rotated ? { ...state, currentPiece: rotated } : state;
+      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [] } : state;
     }
 
     case "ROTATE_CCW": {
       if (!state.currentPiece) return state;
       const rotated = rotatePiece(state.board, state.currentPiece, false);
-      return rotated ? { ...state, currentPiece: rotated } : state;
+      return rotated ? { ...state, currentPiece: rotated, lockingCells: [], hardDropTrail: [] } : state;
     }
 
     case "HARD_DROP": {
       if (!state.currentPiece) return state;
       const dropped = hardDrop(state.board, state.currentPiece);
-      return lockAndAdvance({ ...state, currentPiece: dropped });
+      const startY = state.currentPiece.position.y;
+      const endY = dropped.position.y;
+      const trail: { x: number; y: number; color: string }[] = [];
+      for (let sy = 0; sy < dropped.shape.length; sy++) {
+        for (let sx = 0; sx < dropped.shape[sy].length; sx++) {
+          if (!dropped.shape[sy][sx]) continue;
+          const col = dropped.position.x + sx;
+          for (let ty = startY + sy; ty < endY + sy; ty++) {
+            if (ty >= 0 && ty < BOARD_HEIGHT) {
+              trail.push({ x: col, y: ty, color: dropped.color });
+            }
+          }
+        }
+      }
+      const result = lockAndAdvance({ ...state, currentPiece: dropped });
+      return { ...result, hardDropTrail: trail };
     }
 
     case "HOLD": {

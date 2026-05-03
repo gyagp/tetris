@@ -25,13 +25,13 @@ function makePiece(overrides: Partial<Piece> = {}): Piece {
 
 function getCells(container: HTMLElement): HTMLElement[] {
   const grid = container.firstElementChild as HTMLElement;
-  return Array.from(grid.children) as HTMLElement[];
+  return Array.from(grid.children).filter(el => el.tagName !== "STYLE") as HTMLElement[];
 }
 
 describe("Board component", () => {
   it("renders a 10x20 grid (200 cells)", () => {
     const { container } = render(
-      <Board board={emptyBoard()} currentPiece={null} />
+      <Board board={emptyBoard()} currentPiece={null} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
     expect(cells.length).toBe(BOARD_WIDTH * BOARD_HEIGHT);
@@ -43,7 +43,7 @@ describe("Board component", () => {
     board[19][1] = "#00f000";
 
     const { container } = render(
-      <Board board={board} currentPiece={null} />
+      <Board board={board} currentPiece={null} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
     const lastRowStart = 19 * BOARD_WIDTH;
@@ -54,7 +54,7 @@ describe("Board component", () => {
 
   it("renders empty cells with dark background", () => {
     const { container } = render(
-      <Board board={emptyBoard()} currentPiece={null} />
+      <Board board={emptyBoard()} currentPiece={null} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
     expect(cells[0].style.background).toBe("rgb(26, 26, 26)");
@@ -63,7 +63,7 @@ describe("Board component", () => {
   it("shows current piece with gradient at its position", () => {
     const piece = makePiece({ position: { x: 0, y: 0 } });
     const { container } = render(
-      <Board board={emptyBoard()} currentPiece={piece} />
+      <Board board={emptyBoard()} currentPiece={piece} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
 
@@ -77,7 +77,7 @@ describe("Board component", () => {
   it("shows ghost piece as translucent (opacity 0.3)", () => {
     const piece = makePiece({ position: { x: 0, y: 0 } });
     const { container } = render(
-      <Board board={emptyBoard()} currentPiece={piece} />
+      <Board board={emptyBoard()} currentPiece={piece} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
 
@@ -90,7 +90,7 @@ describe("Board component", () => {
   it("current piece overwrites ghost piece when overlapping", () => {
     const piece = makePiece({ position: { x: 0, y: BOARD_HEIGHT - 2 } });
     const { container } = render(
-      <Board board={emptyBoard()} currentPiece={piece} />
+      <Board board={emptyBoard()} currentPiece={piece} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
 
@@ -104,7 +104,7 @@ describe("Board component", () => {
 
     const piece = makePiece({ position: { x: 0, y: 0 } });
     const { container } = render(
-      <Board board={board} currentPiece={piece} />
+      <Board board={board} currentPiece={piece} clearingRows={[]} lockingCells={[]} hardDropTrail={[]} />
     );
     const cells = getCells(container);
 
