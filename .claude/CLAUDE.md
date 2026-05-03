@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add T-spin detection logic to game engine
+Add T-spin visual celebration effect
 
 ## Acceptance Criteria
-- T-spin is detected when T piece locks after rotation
-- Correctly identifies T-spin using 3-corner rule
-- T-spin state is stored in game state for display
+- Special animated overlay or flash appears on T-spin
+- Visual is distinct from normal line clear effects
+- Animation auto-dismisses after ~1 second
 - npm run build succeeds
 
 ## Rules

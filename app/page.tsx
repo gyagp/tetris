@@ -12,12 +12,21 @@ export default function Home() {
   stateRef.current = state;
 
   const [shakeIntensity, setShakeIntensity] = useState(0);
+  const [showTSpin, setShowTSpin] = useState(false);
+  const [tSpinExiting, setTSpinExiting] = useState(false);
 
   useEffect(() => {
     if (state.clearingRows.length > 0) {
       setShakeIntensity(state.clearingRows.length);
       const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
       const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
+      if (state.tSpin) {
+        setShowTSpin(true);
+        setTSpinExiting(false);
+        const exitTimer = setTimeout(() => setTSpinExiting(true), 800);
+        const hideTimer = setTimeout(() => { setShowTSpin(false); setTSpinExiting(false); }, 1200);
+        return () => { clearTimeout(shakeTimer); clearTimeout(timer); clearTimeout(exitTimer); clearTimeout(hideTimer); };
+      }
       return () => { clearTimeout(timer); clearTimeout(shakeTimer); };
     }
   }, [state.clearingRows]);
@@ -222,6 +231,25 @@ export default function Home() {
           60% { transform: translate(-4px, 6px); }
           80% { transform: translate(4px, -4px); }
         }
+        @keyframes tspin-enter {
+          0% { opacity: 0; transform: scale(0.2) rotate(-20deg); }
+          40% { opacity: 1; transform: scale(1.3) rotate(5deg); }
+          70% { transform: scale(0.95) rotate(-2deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes tspin-exit {
+          0% { opacity: 1; transform: scale(1); }
+          100% { opacity: 0; transform: scale(1.5); }
+        }
+        @keyframes tspin-glow {
+          0%, 100% { text-shadow: 0 0 10px #a855f7, 0 0 30px #a855f7, 0 0 60px #7c3aed; }
+          50% { text-shadow: 0 0 20px #c084fc, 0 0 50px #a855f7, 0 0 80px #7c3aed, 0 0 100px #6d28d9; }
+        }
+        @keyframes tspin-flash {
+          0% { opacity: 0.6; }
+          50% { opacity: 0.2; }
+          100% { opacity: 0; }
+        }
       `}</style>
       <div className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
       <div style={{ position: "relative" }}>
@@ -322,6 +350,41 @@ export default function Home() {
             </div>
           );
         })()}
+        {showTSpin && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              zIndex: 15,
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)",
+                animation: "tspin-flash 1s ease-out forwards",
+              }}
+            />
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: "bold",
+                color: "#c084fc",
+                letterSpacing: 4,
+                animation: tSpinExiting
+                  ? "tspin-exit 0.4s ease-in forwards"
+                  : "tspin-enter 0.5s ease-out, tspin-glow 0.6s ease-in-out 0.5s infinite",
+              }}
+            >
+              T-SPIN
+            </div>
+          </div>
+        )}
       </div>
       <Sidebar
         className="game-sidebar"
