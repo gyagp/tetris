@@ -2,7 +2,7 @@ import { GameState, Piece } from "./types";
 import { BOARD_WIDTH, TETROMINOES } from "./constants";
 import { createBoard, placePiece } from "./board";
 import { movePiece, hardDrop, rotatePiece } from "./movement";
-import { clearLines, calculateScore, calculateLevel, checkGameOver } from "./scoring";
+import { clearLines, findFullRows, calculateScore, calculateLevel, checkGameOver } from "./scoring";
 
 const PIECE_KEYS = Object.keys(TETROMINOES);
 
@@ -18,7 +18,8 @@ export type GameAction =
   | { type: "PAUSE" }
   | { type: "RESUME" }
   | { type: "RESTART" }
-  | { type: "START" };
+  | { type: "START" }
+  | { type: "FINISH_CLEAR" };
 
 function shuffleBag(): string[] {
   const bag = [...PIECE_KEYS];
@@ -69,6 +70,7 @@ export function createInitialState(): GameState {
     isGameOver: false,
     isPaused: false,
     isStarted: false,
+    clearingRows: [],
   };
 }
 
@@ -76,30 +78,53 @@ function lockAndAdvance(state: GameState): GameState {
   if (!state.currentPiece) return state;
 
   const boardAfterPlace = placePiece(state.board, state.currentPiece);
-  const { board: boardAfterClear, linesCleared } = clearLines(boardAfterPlace);
-  const newLines = state.lines + linesCleared;
-  const newLevel = calculateLevel(newLines);
-  const newScore = state.score + calculateScore(linesCleared, state.level);
+  const fullRows = findFullRows(boardAfterPlace);
 
+  if (fullRows.length > 0) {
+    return {
+      ...state,
+      board: boardAfterPlace,
+      currentPiece: null,
+      clearingRows: fullRows,
+    };
+  }
+
+  return advanceWithoutClear(state, boardAfterPlace);
+}
+
+function advanceWithoutClear(state: GameState, board: GameState["board"]): GameState {
   const { key, bag } = drawFromBag(state.bag);
   const newCurrent = state.nextPiece!;
   const newNext = spawnPiece(key);
 
-  if (checkGameOver(boardAfterClear, newCurrent)) {
-    return { ...state, board: boardAfterClear, isGameOver: true, score: newScore, level: newLevel, lines: newLines };
+  if (checkGameOver(board, newCurrent)) {
+    return { ...state, board, isGameOver: true, clearingRows: [] };
   }
 
   return {
     ...state,
-    board: boardAfterClear,
+    board,
     currentPiece: newCurrent,
     nextPiece: newNext,
     bag,
     canHold: true,
-    score: newScore,
-    level: newLevel,
-    lines: newLines,
+    clearingRows: [],
   };
+}
+
+function finishClear(state: GameState): GameState {
+  if (state.clearingRows.length === 0) return state;
+
+  const { board: boardAfterClear, linesCleared } = clearLines(state.board);
+  const newLines = state.lines + linesCleared;
+  const newLevel = calculateLevel(newLines);
+  const newScore = state.score + calculateScore(linesCleared, state.level);
+
+  const result = advanceWithoutClear(
+    { ...state, lines: newLines, level: newLevel, score: newScore },
+    boardAfterClear
+  );
+  return result;
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -108,6 +133,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
   }
   if (!state.isStarted) return state;
   if (state.isGameOver && action.type !== "RESTART") return state;
+  if (action.type === "FINISH_CLEAR") return finishClear(state);
+  if (state.clearingRows.length > 0) return state;
   if (state.isPaused && action.type !== "RESUME" && action.type !== "RESTART") return state;
 
   switch (action.type) {

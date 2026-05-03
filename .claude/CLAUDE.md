@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add colorful tetromino styling with gradient/glow effects and improve board visual design
+Add line clear animation effect
 
 ## Acceptance Criteria
-- Each tetromino type has distinct gradient or glow CSS
-- Board has polished grid styling with subtle gridlines
-- Pieces look visually appealing with depth/shine effects
+- When lines are cleared, a visible flash/dissolve animation plays before rows disappear
+- Animation completes in ~300-500ms
+- Rows above shift down smoothly after animation
 - npm run build succeeds
 
 ## Rules

@@ -26,4 +26,5 @@ export interface GameState {
   isGameOver: boolean;
   isPaused: boolean;
   isStarted: boolean;
+  clearingRows: number[];
 }

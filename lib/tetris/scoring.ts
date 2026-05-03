@@ -4,6 +4,16 @@ import { checkCollision } from "./board";
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
 
+export function findFullRows(board: Board): number[] {
+  const rows: number[] = [];
+  for (let y = 0; y < board.length; y++) {
+    if (board[y].every((cell) => cell !== null)) {
+      rows.push(y);
+    }
+  }
+  return rows;
+}
+
 export function clearLines(board: Board): { board: Board; linesCleared: number } {
   const remaining = board.filter((row) => row.some((cell) => cell === null));
   const linesCleared = board.length - remaining.length;

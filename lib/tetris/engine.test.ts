@@ -1,9 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { gameReducer, createInitialState } from "./engine";
 import { GameState } from "./types";
+import { BOARD_HEIGHT, BOARD_WIDTH } from "./constants";
 
 function init(): GameState {
   return createInitialState();
+}
+
+function fullRow(): (string | null)[] {
+  return Array(BOARD_WIDTH).fill("#fff");
+}
+
+function emptyRow(): (string | null)[] {
+  return Array(BOARD_WIDTH).fill(null);
 }
 
 describe("game start/pause/restart flow", () => {
@@ -87,5 +96,75 @@ describe("game start/pause/restart flow", () => {
       expect(after.isStarted).toBe(true);
       expect(after.isPaused).toBe(false);
     });
+  });
+});
+
+describe("Line clear animation", () => {
+  it("clearingRows is initialized to empty array", () => {
+    expect(init().clearingRows).toEqual([]);
+  });
+
+  it("blocks all input except FINISH_CLEAR while clearingRows is active", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const clearing: GameState = {
+      ...s,
+      clearingRows: [18, 19],
+      currentPiece: null,
+    };
+
+    for (const type of ["TICK", "MOVE_LEFT", "MOVE_RIGHT", "ROTATE_CW", "SOFT_DROP", "HARD_DROP", "HOLD"] as const) {
+      expect(gameReducer(clearing, { type })).toBe(clearing);
+    }
+  });
+
+  it("FINISH_CLEAR removes full rows, updates score, and spawns next piece", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const board = Array.from({ length: BOARD_HEIGHT }, (_, i) =>
+      i >= BOARD_HEIGHT - 1 ? fullRow() : emptyRow()
+    );
+    const clearing: GameState = {
+      ...s,
+      board,
+      clearingRows: [BOARD_HEIGHT - 1],
+      currentPiece: null,
+      score: 0,
+      lines: 0,
+      level: 1,
+    };
+
+    const result = gameReducer(clearing, { type: "FINISH_CLEAR" });
+
+    expect(result.clearingRows).toEqual([]);
+    expect(result.lines).toBe(1);
+    expect(result.score).toBeGreaterThan(0);
+    expect(result.currentPiece).not.toBeNull();
+    expect(result.board.filter((r) => r.every((c) => c !== null))).toHaveLength(0);
+  });
+
+  it("FINISH_CLEAR is a no-op when clearingRows is empty", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const result = gameReducer(s, { type: "FINISH_CLEAR" });
+    expect(result).toBe(s);
+  });
+
+  it("rows shift down after clear (board height preserved)", () => {
+    let s = init();
+    s = gameReducer(s, { type: "START" });
+    const board = Array.from({ length: BOARD_HEIGHT }, (_, i) =>
+      i >= BOARD_HEIGHT - 2 ? fullRow() : emptyRow()
+    );
+    const clearing: GameState = {
+      ...s,
+      board,
+      clearingRows: [BOARD_HEIGHT - 2, BOARD_HEIGHT - 1],
+      currentPiece: null,
+    };
+
+    const result = gameReducer(clearing, { type: "FINISH_CLEAR" });
+    expect(result.board.length).toBe(BOARD_HEIGHT);
+    expect(result.lines).toBe(2);
   });
 });

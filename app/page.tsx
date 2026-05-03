@@ -12,6 +12,13 @@ export default function Home() {
   stateRef.current = state;
 
   useEffect(() => {
+    if (state.clearingRows.length > 0) {
+      const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [state.clearingRows]);
+
+  useEffect(() => {
     if (!state.isStarted || state.isGameOver || state.isPaused) return;
     const interval = getDropInterval(state.level);
     const timer = setInterval(() => dispatch({ type: "TICK" }), interval);
@@ -81,7 +88,7 @@ export default function Home() {
       }}
     >
       <div style={{ position: "relative" }}>
-        <Board board={state.board} currentPiece={state.currentPiece} />
+        <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} />
         {!state.isStarted && (
           <div
             style={{

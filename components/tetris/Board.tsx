@@ -10,6 +10,7 @@ const CELL_SIZE = 30;
 interface BoardProps {
   board: BoardType;
   currentPiece: Piece | null;
+  clearingRows: number[];
 }
 
 function buildDisplayGrid(
@@ -54,8 +55,9 @@ function buildDisplayGrid(
   return grid;
 }
 
-export default function Board({ board, currentPiece }: BoardProps) {
+export default function Board({ board, currentPiece, clearingRows }: BoardProps) {
   const grid = buildDisplayGrid(board, currentPiece);
+  const clearingSet = new Set(clearingRows);
 
   return (
     <div
@@ -69,8 +71,17 @@ export default function Board({ board, currentPiece }: BoardProps) {
         boxShadow: "0 0 20px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.5)",
       }}
     >
+      <style>{`
+        @keyframes line-clear-flash {
+          0% { background: #fff; opacity: 1; }
+          30% { background: #fff; opacity: 1; }
+          60% { background: #fff; opacity: 0.5; }
+          100% { background: transparent; opacity: 0; }
+        }
+      `}</style>
       {grid.flatMap((row, y) =>
         row.map((cell, x) => {
+          const isClearing = clearingSet.has(y);
           const style = cell.color ? PIECE_STYLES[cell.color] : null;
           return (
             <div
@@ -78,18 +89,23 @@ export default function Board({ board, currentPiece }: BoardProps) {
               style={{
                 width: CELL_SIZE,
                 height: CELL_SIZE,
-                background: cell.ghost
-                  ? cell.color ?? "#1a1a1a"
-                  : style
-                    ? style.gradient
-                    : "#1a1a1a",
+                background: isClearing
+                  ? "#fff"
+                  : cell.ghost
+                    ? cell.color ?? "#1a1a1a"
+                    : style
+                      ? style.gradient
+                      : "#1a1a1a",
                 opacity: cell.ghost ? 0.3 : 1,
                 border: cell.color && !cell.ghost
                   ? "1px solid rgba(255,255,255,0.15)"
                   : "1px solid #222",
                 boxSizing: "border-box",
-                boxShadow: cell.color && !cell.ghost ? style?.glow : "none",
+                boxShadow: isClearing
+                  ? "0 0 15px rgba(255,255,255,0.8)"
+                  : cell.color && !cell.ghost ? style?.glow : "none",
                 borderRadius: cell.color && !cell.ghost ? 2 : 0,
+                animation: isClearing ? "line-clear-flash 400ms ease-out forwards" : "none",
               }}
             />
           );
