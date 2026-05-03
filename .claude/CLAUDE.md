@@ -1,12 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Add smooth piece locking animation and hard drop visual effect
+Add animated transitions for game state overlays (start, pause, game over screens)
 
 ## Acceptance Criteria
-- When a piece locks into place, a brief flash or pulse animation plays on the locked cells
-- Hard drop shows a brief trail or impact effect
-- Animations do not interfere with gameplay timing
+- Start screen has fade-in or scale-in entrance animation
+- Pause overlay animates in/out smoothly
+- Game over screen has dramatic entrance animation
+- Title text has subtle animation (pulse, glow, or shimmer)
 - npm run build succeeds
 
 ## Rules

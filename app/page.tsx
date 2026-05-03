@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useReducer, useEffect, useCallback, useRef } from "react";
+import React, { useReducer, useEffect, useCallback, useRef, useState } from "react";
 import Board from "@/components/tetris/Board";
 import Sidebar from "@/components/tetris/Sidebar";
 import { gameReducer, createInitialState } from "@/lib/tetris/engine";
@@ -76,6 +76,21 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
+  const [showPause, setShowPause] = useState(false);
+  const [pauseExiting, setPauseExiting] = useState(false);
+  const isPaused = state.isStarted && state.isPaused;
+
+  useEffect(() => {
+    if (isPaused) {
+      setShowPause(true);
+      setPauseExiting(false);
+    } else if (showPause) {
+      setPauseExiting(true);
+      const t = setTimeout(() => { setShowPause(false); setPauseExiting(false); }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [isPaused]);
+
   return (
     <div
       style={{
@@ -87,6 +102,29 @@ export default function Home() {
         paddingTop: 40,
       }}
     >
+      <style>{`
+        @keyframes overlay-fade-scale {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes overlay-fade-out {
+          from { opacity: 1; transform: scale(1); }
+          to { opacity: 0; transform: scale(1.05); }
+        }
+        @keyframes game-over-entrance {
+          0% { opacity: 0; transform: scale(0.3) rotate(-5deg); }
+          60% { opacity: 1; transform: scale(1.1) rotate(1deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes title-shimmer {
+          0%, 100% { text-shadow: 0 0 8px rgba(0,200,255,0.6), 0 0 20px rgba(0,200,255,0.3); }
+          50% { text-shadow: 0 0 16px rgba(0,200,255,1), 0 0 40px rgba(0,200,255,0.6), 0 0 60px rgba(100,200,255,0.3); }
+        }
+        @keyframes prompt-pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+      `}</style>
       <div style={{ position: "relative" }}>
         <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
         {!state.isStarted && (
@@ -101,13 +139,14 @@ export default function Home() {
               backgroundColor: "rgba(0,0,0,0.85)",
               color: "#fff",
               gap: 16,
+              animation: "overlay-fade-scale 0.5s ease-out",
             }}
           >
-            <div style={{ fontSize: 40, fontWeight: "bold" }}>TETRIS</div>
-            <div style={{ fontSize: 14 }}>Press Enter to Start</div>
+            <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite" }}>TETRIS</div>
+            <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite" }}>Press Enter to Start</div>
           </div>
         )}
-        {state.isStarted && state.isPaused && (
+        {showPause && (
           <div
             style={{
               position: "absolute",
@@ -119,9 +158,10 @@ export default function Home() {
               color: "#fff",
               fontSize: 32,
               fontWeight: "bold",
+              animation: pauseExiting ? "overlay-fade-out 0.3s ease-in forwards" : "overlay-fade-scale 0.3s ease-out",
             }}
           >
-            PAUSED
+            <div style={{ animation: "title-shimmer 2.5s ease-in-out infinite" }}>PAUSED</div>
           </div>
         )}
         {state.isGameOver && (
@@ -138,11 +178,12 @@ export default function Home() {
               fontSize: 28,
               fontWeight: "bold",
               gap: 12,
+              animation: "overlay-fade-scale 0.4s ease-out",
             }}
           >
-            <div>GAME OVER</div>
+            <div style={{ animation: "game-over-entrance 0.6s ease-out" }}>GAME OVER</div>
             <div style={{ fontSize: 18, fontWeight: "normal" }}>Score: {state.score}</div>
-            <div style={{ fontSize: 14, fontWeight: "normal" }}>Press Enter or R to restart</div>
+            <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite" }}>Press Enter or R to restart</div>
           </div>
         )}
       </div>
