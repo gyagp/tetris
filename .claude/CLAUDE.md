@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Implement dual input handling: Player 1 arrow keys, Player 2 WASD + E/Q
+Wire garbage line sending on multi-line clears between players
 
 ## Acceptance Criteria
-- Player 1 uses Arrow keys for movement, Up for rotate CW, Z for rotate CCW, Space for hard drop, C for hold
-- Player 2 uses WASD for movement, E for rotate CW, Q for rotate CCW, Shift for hard drop, F for hold
-- Inputs dispatch to correct player's reducer
-- No key conflicts between players
+- Clearing 2+ lines sends garbage rows to opponent (lines-1 rows)
+- Garbage appears on opponent's board after their next tick
+- T-spin clears also send garbage
+- npm run build succeeds
 
 ## Rules
 # Rules

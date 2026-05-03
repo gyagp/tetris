@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useReducer, useEffect, useCallback, useRef, useState } from "react";
+import React, { useReducer, useEffect, useCallback, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import Board from "@/components/tetris/Board";
 import Sidebar from "@/components/tetris/Sidebar";
 import { gameReducer, createInitialState } from "@/lib/tetris/engine";
@@ -19,15 +19,24 @@ interface KeyBindings {
   start: string;
 }
 
+export interface GameInstanceHandle {
+  sendGarbage: (lines: number) => void;
+}
+
 interface GameInstanceProps {
   keyBindings: KeyBindings;
   label?: string;
+  onLinesCleared?: (linesCleared: number, tSpin: boolean) => void;
 }
 
-export default function GameInstance({ keyBindings, label }: GameInstanceProps) {
+const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, onLinesCleared }, ref) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  useImperativeHandle(ref, () => ({
+    sendGarbage: (lines: number) => dispatch({ type: "RECEIVE_GARBAGE", lines }),
+  }), []);
 
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [showTSpin, setShowTSpin] = useState(false);
@@ -37,6 +46,7 @@ export default function GameInstance({ keyBindings, label }: GameInstanceProps) 
 
   useEffect(() => {
     if (state.clearingRows.length > 0) {
+      onLinesCleared?.(state.clearingRows.length, state.tSpin);
       setShakeIntensity(state.clearingRows.length);
       const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
       const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
@@ -228,4 +238,6 @@ export default function GameInstance({ keyBindings, label }: GameInstanceProps) 
       </div>
     </div>
   );
-}
+});
+
+export default GameInstance;
