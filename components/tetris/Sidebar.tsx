@@ -77,6 +77,14 @@ interface SidebarProps {
   level: number;
   lines: number;
   highScore: number;
+  labels?: {
+    hold?: string;
+    next?: string;
+    score?: string;
+    highScore?: string;
+    level?: string;
+    lines?: string;
+  };
 }
 
 function AnimatedValue({ value }: { value: number }) {
@@ -171,7 +179,7 @@ function VolumeControl() {
   );
 }
 
-export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines, highScore }: SidebarProps) {
+export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines, highScore, labels }: SidebarProps) {
   const panelStyle: React.CSSProperties = {
     background: "rgba(10, 0, 20, 0.7)",
     border: "1px solid var(--theme-border, rgba(0, 200, 255, 0.3))",
@@ -211,22 +219,22 @@ export default function Sidebar({ className, nextPiece, holdPiece, score, level,
           box-shadow: 0 0 16px var(--theme-glow-hover, rgba(0, 200, 255, 0.25)), inset 0 0 12px rgba(0, 0, 0, 0.4) !important;
         }
       `}</style>
-      <PiecePreview piece={holdPiece} label="Hold" />
-      <PiecePreview piece={nextPiece} label="Next" />
+      <PiecePreview piece={holdPiece} label={labels?.hold ?? "Hold"} />
+      <PiecePreview piece={nextPiece} label={labels?.next ?? "Next"} />
       <div className="stat-panel" style={panelStyle}>
-        <div style={labelStyle}>Score</div>
+        <div style={labelStyle}>{labels?.score ?? "Score"}</div>
         <div style={valueStyle}><AnimatedValue value={score} /></div>
       </div>
       <div className="stat-panel" style={panelStyle}>
-        <div style={labelStyle}>High Score</div>
+        <div style={labelStyle}>{labels?.highScore ?? "High Score"}</div>
         <div style={valueStyle}><AnimatedValue value={highScore} /></div>
       </div>
       <div className="stat-panel" style={panelStyle}>
-        <div style={labelStyle}>Level</div>
+        <div style={labelStyle}>{labels?.level ?? "Level"}</div>
         <div style={valueStyle}><AnimatedValue value={level} /></div>
       </div>
       <div className="stat-panel" style={{ ...panelStyle, marginBottom: 0 }}>
-        <div style={labelStyle}>Lines</div>
+        <div style={labelStyle}>{labels?.lines ?? "Lines"}</div>
         <div style={valueStyle}><AnimatedValue value={lines} /></div>
       </div>
       <VolumeControl />

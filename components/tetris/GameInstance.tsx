@@ -40,11 +40,26 @@ interface GameInstanceProps {
   theme?: PlayerTheme;
   onLinesCleared?: (linesCleared: number, tSpin: boolean) => void;
   onGameOver?: () => void;
+  texts?: {
+    startPrompt?: string;
+    pauseText?: string;
+    gameOverText?: string;
+    scoreLabel?: string;
+    restartPrompt?: string;
+  };
+  sidebarLabels?: {
+    hold?: string;
+    next?: string;
+    score?: string;
+    highScore?: string;
+    level?: string;
+    lines?: string;
+  };
 }
 
 const HIGH_SCORE_KEY = "tetris-high-score";
 
-const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, theme, onLinesCleared, onGameOver }, ref) {
+const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, theme, onLinesCleared, onGameOver, texts, sidebarLabels }, ref) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -230,7 +245,7 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
             }}>
               <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite", letterSpacing: 6 }}>TETRIS</div>
               <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>
-                Tap or press {keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} to Start
+                {texts?.startPrompt ?? `Tap or press ${keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} to Start`}
               </div>
             </div>
           )}
@@ -240,7 +255,7 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
               backgroundColor: "rgba(5, 0, 20, 0.85)", color: "#fff", fontSize: 32, fontWeight: "bold",
               animation: pauseExiting ? "overlay-fade-out 0.3s ease-in forwards" : "overlay-fade-scale 0.3s ease-out",
             }}>
-              <div style={{ fontSize: 32, animation: "title-shimmer 2.5s ease-in-out infinite", letterSpacing: 4 }}>PAUSED</div>
+              <div style={{ fontSize: 32, animation: "title-shimmer 2.5s ease-in-out infinite", letterSpacing: 4 }}>{texts?.pauseText ?? "PAUSED"}</div>
             </div>
           )}
           {state.isGameOver && (
@@ -250,10 +265,10 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
               backgroundColor: "rgba(5, 0, 20, 0.85)", color: "#fff", fontSize: 28, fontWeight: "bold",
               gap: 12, animation: "overlay-fade-scale 0.4s ease-out",
             }}>
-              <div style={{ animation: "game-over-entrance 0.6s ease-out", color: "#ff3366", textShadow: "0 0 10px rgba(255, 51, 102, 0.6), 0 0 30px rgba(255, 51, 102, 0.3)" }}>GAME OVER</div>
-              <div style={{ fontSize: 18, fontWeight: "normal", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>Score: {state.score}</div>
+              <div style={{ animation: "game-over-entrance 0.6s ease-out", color: "#ff3366", textShadow: "0 0 10px rgba(255, 51, 102, 0.6), 0 0 30px rgba(255, 51, 102, 0.3)" }}>{texts?.gameOverText ?? "GAME OVER"}</div>
+              <div style={{ fontSize: 18, fontWeight: "normal", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>{texts?.scoreLabel ?? "Score"}: {state.score}</div>
               <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite", color: "rgba(200, 130, 255, 0.8)" }}>
-                Press {keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} or {`"${keyBindings.restart}"`} to restart
+                {texts?.restartPrompt ?? `Press ${keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} or "${keyBindings.restart}" to restart`}
               </div>
             </div>
           )}
@@ -310,7 +325,7 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
             </div>
           )}
         </div>
-        <Sidebar className="game-sidebar" nextPiece={state.nextPiece} holdPiece={state.holdPiece} score={state.score} level={state.level} lines={state.lines} highScore={highScore} />
+        <Sidebar className="game-sidebar" nextPiece={state.nextPiece} holdPiece={state.holdPiece} score={state.score} level={state.level} lines={state.lines} highScore={highScore} labels={sidebarLabels} />
       </div>
     </div>
   );

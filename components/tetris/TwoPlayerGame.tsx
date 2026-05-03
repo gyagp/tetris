@@ -21,19 +21,6 @@ const P2_THEME: PlayerTheme = {
 };
 
 const P1_KEYS = {
-  left: "ArrowLeft",
-  right: "ArrowRight",
-  down: "ArrowDown",
-  rotateCW: "ArrowUp",
-  rotateCCW: "z",
-  hardDrop: " ",
-  hold: "c",
-  pause: "p",
-  restart: "r",
-  start: "Enter",
-};
-
-const P2_KEYS = {
   left: "a",
   right: "d",
   down: "s",
@@ -46,8 +33,82 @@ const P2_KEYS = {
   start: "w",
 };
 
+const P2_KEYS = {
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  down: "ArrowDown",
+  rotateCW: "ArrowUp",
+  rotateCCW: "z",
+  hardDrop: " ",
+  hold: "c",
+  pause: "p",
+  restart: "r",
+  start: "Enter",
+};
+
 interface TwoPlayerGameProps {
   onBackToMenu?: () => void;
+}
+
+function formatKey(key: string): string {
+  switch (key) {
+    case "ArrowLeft": return "←";
+    case "ArrowRight": return "→";
+    case "ArrowDown": return "↓";
+    case "ArrowUp": return "↑";
+    case " ": return "空格";
+    case "Enter": return "回车";
+    case "Shift": return "Shift";
+    default: return key.toUpperCase();
+  }
+}
+
+function KeyLegend({ keys, accentColor }: { keys: typeof P1_KEYS; accentColor: string }) {
+  const entries: [string, string][] = [
+    ["左移", keys.left],
+    ["右移", keys.right],
+    ["下落", keys.down],
+    ["顺时针", keys.rotateCW],
+    ["逆时针", keys.rotateCCW],
+    ["硬降", keys.hardDrop],
+    ["暂存", keys.hold],
+    ["暂停", keys.pause],
+    ["开始", keys.start],
+  ];
+  return (
+    <div style={{
+      marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.8,
+      background: "rgba(10, 0, 20, 0.6)", border: `1px solid ${accentColor}33`,
+      borderRadius: 6, padding: "6px 10px",
+    }}>
+      <div style={{ color: accentColor, fontSize: 10, letterSpacing: 2, marginBottom: 4, textTransform: "uppercase" }}>按键</div>
+      {entries.map(([label, key]) => (
+        <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+          <span>{label}</span>
+          <span style={{ color: accentColor, fontFamily: "monospace", fontWeight: "bold" }}>{formatKey(key)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const CN_SIDEBAR_LABELS = {
+  hold: "暂存",
+  next: "下一个",
+  score: "分数",
+  highScore: "最高分",
+  level: "等级",
+  lines: "行数",
+};
+
+function makeTexts(keys: typeof P1_KEYS) {
+  return {
+    startPrompt: `点击或按 ${formatKey(keys.start)} 开始`,
+    pauseText: "暂停",
+    gameOverText: "游戏结束",
+    scoreLabel: "分数",
+    restartPrompt: `按 ${formatKey(keys.start)} 或 ${formatKey(keys.restart)} 重新开始`,
+  };
 }
 
 export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
@@ -90,8 +151,14 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
   return (
     <div style={{ position: "relative" }}>
       <div key={gameKey} className="two-player-board" style={{ display: "flex", gap: 32, justifyContent: "center" }}>
-        <GameInstance ref={p1Ref} keyBindings={P1_KEYS} label="PLAYER 1" theme={P1_THEME} onLinesCleared={handleP1Clear} onGameOver={handleP1GameOver} />
-        <GameInstance ref={p2Ref} keyBindings={P2_KEYS} label="PLAYER 2" theme={P2_THEME} onLinesCleared={handleP2Clear} onGameOver={handleP2GameOver} />
+        <div>
+          <GameInstance ref={p1Ref} keyBindings={P1_KEYS} label="玩家 1" theme={P1_THEME} onLinesCleared={handleP1Clear} onGameOver={handleP1GameOver} texts={makeTexts(P1_KEYS)} sidebarLabels={CN_SIDEBAR_LABELS} />
+          <KeyLegend keys={P1_KEYS} accentColor={P1_THEME.accent} />
+        </div>
+        <div>
+          <GameInstance ref={p2Ref} keyBindings={P2_KEYS} label="玩家 2" theme={P2_THEME} onLinesCleared={handleP2Clear} onGameOver={handleP2GameOver} texts={makeTexts(P2_KEYS)} sidebarLabels={CN_SIDEBAR_LABELS} />
+          <KeyLegend keys={P2_KEYS} accentColor={P2_THEME.accent} />
+        </div>
       </div>
 
       {winner && (
@@ -107,10 +174,10 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
             textShadow: "0 0 15px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3)",
             marginBottom: 16,
           }}>
-            PLAYER {winner} WINS!
+            玩家 {winner} 获胜！
           </div>
           <div style={{ fontSize: 18, color: "#0ff", marginBottom: 40, textShadow: "0 0 6px rgba(0,255,255,0.4)" }}>
-            Player {winner === 1 ? 2 : 1} topped out
+            玩家 {winner === 1 ? 2 : 1} 出局
           </div>
           <div style={{ display: "flex", gap: 16 }}>
             <button
@@ -125,7 +192,7 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(0, 60, 80, 0.9)"; e.currentTarget.style.borderColor = "rgba(0, 255, 255, 0.8)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(0, 30, 40, 0.8)"; e.currentTarget.style.borderColor = "rgba(0, 200, 255, 0.4)"; }}
             >
-              PLAY AGAIN
+              再来一局
             </button>
             {onBackToMenu && (
               <button
@@ -140,7 +207,7 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(0, 60, 80, 0.9)"; e.currentTarget.style.borderColor = "rgba(0, 255, 255, 0.8)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "rgba(0, 30, 40, 0.8)"; e.currentTarget.style.borderColor = "rgba(0, 200, 255, 0.4)"; }}
               >
-                BACK TO MENU
+                返回菜单
               </button>
             )}
           </div>
