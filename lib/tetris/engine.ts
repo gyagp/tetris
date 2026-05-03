@@ -20,7 +20,8 @@ export type GameAction =
   | { type: "RESTART" }
   | { type: "START" }
   | { type: "FINISH_CLEAR" }
-  | { type: "RECEIVE_GARBAGE"; lines: number; gapColumn?: number };
+  | { type: "RECEIVE_GARBAGE"; lines: number; gapColumn?: number }
+  | { type: "FORCE_GAME_OVER" };
 
 function shuffleBag(): string[] {
   const bag = [...PIECE_KEYS];
@@ -295,6 +296,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case "RESTART":
       return { ...createInitialState(), isStarted: true };
+
+    case "FORCE_GAME_OVER":
+      return { ...state, isGameOver: true };
 
     default:
       return state;

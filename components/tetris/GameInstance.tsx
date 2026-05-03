@@ -21,21 +21,24 @@ interface KeyBindings {
 
 export interface GameInstanceHandle {
   sendGarbage: (lines: number) => void;
+  forceGameOver: () => void;
 }
 
 interface GameInstanceProps {
   keyBindings: KeyBindings;
   label?: string;
   onLinesCleared?: (linesCleared: number, tSpin: boolean) => void;
+  onGameOver?: () => void;
 }
 
-const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, onLinesCleared }, ref) {
+const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, onLinesCleared, onGameOver }, ref) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const stateRef = useRef(state);
   stateRef.current = state;
 
   useImperativeHandle(ref, () => ({
     sendGarbage: (lines: number) => dispatch({ type: "RECEIVE_GARBAGE", lines }),
+    forceGameOver: () => dispatch({ type: "FORCE_GAME_OVER" }),
   }), []);
 
   const [shakeIntensity, setShakeIntensity] = useState(0);
@@ -67,6 +70,12 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
       return () => { clearTimeout(timer); clearTimeout(shakeTimer); };
     }
   }, [state.clearingRows]);
+
+  const onGameOverRef = useRef(onGameOver);
+  onGameOverRef.current = onGameOver;
+  useEffect(() => {
+    if (state.isGameOver && state.isStarted) onGameOverRef.current?.();
+  }, [state.isGameOver, state.isStarted]);
 
   useEffect(() => {
     if (!state.isStarted || state.isGameOver || state.isPaused) return;

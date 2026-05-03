@@ -237,7 +237,7 @@ export default function Home() {
         <GameInstance keyBindings={P1_KEYS} />
       )}
 
-      {mode === "2p" && <TwoPlayerGame />}
+      {mode === "2p" && <TwoPlayerGame onBackToMenu={() => setMode("select")} />}
     </div>
   );
 }
