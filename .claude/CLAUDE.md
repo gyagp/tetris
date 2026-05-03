@@ -1,12 +1,11 @@
 # Autopo execute Session
 
 ## Work Unit
-Add tests for AudioManager sound effects and volume control
+Add tests for audio integration in GameInstance (event triggers)
 
 ## Acceptance Criteria
-- Tests for each sound effect method
-- Tests for volume control and mute toggle
-- Tests for lazy initialization
+- Tests verify audio plays on move, rotate, hard drop, line clear, tetris, game over
+- Tests verify audio is lazy-loaded
 - All tests pass
 
 ## Rules

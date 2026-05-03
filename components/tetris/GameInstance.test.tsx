@@ -5,7 +5,16 @@ import { AudioManager } from "@/lib/tetris/audio";
 
 vi.mock("@/lib/tetris/audio", () => {
   const mockPlay = vi.fn();
-  const mockInstance = { play: mockPlay };
+  const mockInstance = {
+    play: mockPlay,
+    isMuted: vi.fn(() => false),
+    getVolume: vi.fn(() => 0.5),
+    setVolume: vi.fn(),
+    toggleMute: vi.fn(() => false),
+    startMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    setMusicTempo: vi.fn(),
+  };
   return {
     AudioManager: {
       getInstance: vi.fn(() => mockInstance),
