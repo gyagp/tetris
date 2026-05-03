@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Add garbage line mechanism to game engine (reducer action to insert garbage rows from bottom)
+Create TwoPlayerGame component that manages two independent game states with separate tick loops
 
 ## Acceptance Criteria
-- New RECEIVE_GARBAGE action in gameReducer inserts N rows at bottom of board
-- Existing rows shift up
-- Game over triggered if pushed rows exceed board height
-- Unit tests pass
+- Two useReducer instances with independent GameState
+- Each has its own setInterval tick loop
+- Both boards render side by side in split screen layout
+- npm run build succeeds
 
 ## Rules
 # Rules
