@@ -1,11 +1,11 @@
 # Autopo test Session
 
 ## Work Unit
-Add animated gradient background effect behind the game board
+Add screen shake effect on line clears
 
 ## Acceptance Criteria
-- Background has a subtle animated gradient or particle-like effect
-- Animation is smooth and does not impact game performance
+- Game container shakes briefly when lines are cleared
+- Shake intensity scales with number of lines cleared
 - npm run build succeeds
 
 ## Rules

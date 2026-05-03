@@ -11,10 +11,14 @@ export default function Home() {
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  const [shakeIntensity, setShakeIntensity] = useState(0);
+
   useEffect(() => {
     if (state.clearingRows.length > 0) {
+      setShakeIntensity(state.clearingRows.length);
+      const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
       const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
-      return () => clearTimeout(timer);
+      return () => { clearTimeout(timer); clearTimeout(shakeTimer); };
     }
   }, [state.clearingRows]);
 
@@ -163,8 +167,36 @@ export default function Home() {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
         }
+        @keyframes screen-shake-1 {
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-2px, 1px); }
+          40% { transform: translate(2px, -1px); }
+          60% { transform: translate(-1px, 2px); }
+          80% { transform: translate(1px, -1px); }
+        }
+        @keyframes screen-shake-2 {
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-3px, 2px); }
+          40% { transform: translate(3px, -2px); }
+          60% { transform: translate(-2px, 3px); }
+          80% { transform: translate(2px, -2px); }
+        }
+        @keyframes screen-shake-3 {
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-4px, 3px); }
+          40% { transform: translate(4px, -3px); }
+          60% { transform: translate(-3px, 4px); }
+          80% { transform: translate(3px, -3px); }
+        }
+        @keyframes screen-shake-4 {
+          0%, 100% { transform: translate(0, 0); }
+          20% { transform: translate(-6px, 4px); }
+          40% { transform: translate(6px, -4px); }
+          60% { transform: translate(-4px, 6px); }
+          80% { transform: translate(4px, -4px); }
+        }
       `}</style>
-      <div className="game-container">
+      <div className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
       <div style={{ position: "relative" }}>
         <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
         {!state.isStarted && (
