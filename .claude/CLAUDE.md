@@ -1,13 +1,13 @@
-# Autopo execute Session
+# Autopo test Session
 
 ## Work Unit
-Add tests for two-player game logic: garbage lines, win condition, input routing
+Create audio manager module with Web Audio API for procedural sound effects (move, rotate, hard drop, line clear, tetris, game over)
 
 ## Acceptance Criteria
-- Tests for RECEIVE_GARBAGE action cover row insertion and game over
-- Tests for win condition detection
-- Tests for key mapping to correct player
-- All tests pass
+- lib/tetris/audio.ts exists
+- AudioManager class with play methods for each sound effect
+- Uses Web Audio API oscillators/noise for procedural generation
+- Singleton pattern with lazy initialization
 
 ## Rules
 # Rules
