@@ -1,12 +1,13 @@
-# Autopo test Session
+# Autopo review Session
 
 ## Work Unit
-Add test script to package.json and verify all tests pass
+Write README with game description, controls, features, and deployment instructions
 
 ## Acceptance Criteria
-- package.json has a 'test' script
-- npm test runs successfully
-- All existing tests pass
+- README has game description
+- README lists keyboard controls
+- README lists touch controls
+- README has deployment/build instructions
 
 ## Rules
 # Rules
