@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add combo counter state tracking for consecutive line clears
+Add combo counter UI with visual feedback
 
 ## Acceptance Criteria
-- Game state tracks consecutive clears as a combo counter
-- Combo resets when a piece locks without clearing lines
-- Combo count is accessible for display
+- Combo counter displays on screen when combo >= 2
+- Visual feedback escalates with higher combos (color, size, or glow)
+- Counter animates in and fades out
 - npm run build succeeds
 
 ## Rules

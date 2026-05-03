@@ -80,6 +80,20 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
+  const [comboDisplay, setComboDisplay] = useState<number>(0);
+  const [comboExiting, setComboExiting] = useState(false);
+
+  useEffect(() => {
+    if (state.combo >= 2) {
+      setComboDisplay(state.combo);
+      setComboExiting(false);
+    } else if (comboDisplay > 0) {
+      setComboExiting(true);
+      const t = setTimeout(() => { setComboDisplay(0); setComboExiting(false); }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [state.combo]);
+
   const [showPause, setShowPause] = useState(false);
   const [pauseExiting, setPauseExiting] = useState(false);
   const isPaused = state.isStarted && state.isPaused;
@@ -166,6 +180,19 @@ export default function Home() {
         @keyframes prompt-pulse {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
+        }
+        @keyframes combo-enter {
+          0% { opacity: 0; transform: scale(0.3) translateY(20px); }
+          50% { opacity: 1; transform: scale(1.2) translateY(-5px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes combo-exit {
+          0% { opacity: 1; transform: scale(1) translateY(0); }
+          100% { opacity: 0; transform: scale(0.8) translateY(-30px); }
+        }
+        @keyframes combo-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
         }
         @keyframes screen-shake-1 {
           0%, 100% { transform: translate(0, 0); }
@@ -258,6 +285,43 @@ export default function Home() {
             <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite" }}>Press Enter or R to restart</div>
           </div>
         )}
+        {comboDisplay > 0 && (() => {
+          const tier = Math.min(comboDisplay, 10);
+          const colors = ["#00ccff", "#00ff88", "#ffcc00", "#ff6600", "#ff0044"];
+          const color = colors[Math.min(Math.floor((tier - 2) / 2), colors.length - 1)];
+          const fontSize = 20 + tier * 2;
+          const glowSize = tier * 4;
+          return (
+            <div
+              key={comboDisplay}
+              style={{
+                position: "absolute",
+                top: 60,
+                left: 0,
+                right: 0,
+                display: "flex",
+                justifyContent: "center",
+                pointerEvents: "none",
+                animation: comboExiting
+                  ? "combo-exit 0.6s ease-in forwards"
+                  : "combo-enter 0.4s ease-out, combo-pulse 0.8s ease-in-out 0.4s infinite",
+                zIndex: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontSize,
+                  fontWeight: "bold",
+                  color,
+                  textShadow: `0 0 ${glowSize}px ${color}, 0 0 ${glowSize * 2}px ${color}80`,
+                  letterSpacing: 2,
+                }}
+              >
+                {comboDisplay}x COMBO
+              </div>
+            </div>
+          );
+        })()}
       </div>
       <Sidebar
         className="game-sidebar"
