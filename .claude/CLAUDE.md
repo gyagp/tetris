@@ -1,11 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Implement core game types and constants: board dimensions, tetromino shapes, colors, and game state interfaces
+Implement board logic: create empty board, place piece on board, collision detection (walls, floor, placed pieces)
 
 ## Acceptance Criteria
-- lib/tetris/types.ts exists with Board, Piece, GameState types
-- lib/tetris/constants.ts exists with BOARD_WIDTH=10, BOARD_HEIGHT=20, all 7 tetromino definitions with shapes and colors
+- lib/tetris/board.ts exists
+- createBoard() returns 10x20 empty grid
+- checkCollision() detects wall, floor, and piece collisions
+- placePiece() merges piece into board
 
 ## Rules
 # Rules
