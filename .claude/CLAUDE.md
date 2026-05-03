@@ -1,13 +1,15 @@
 # Autopo test Session
 
 ## Work Unit
-Implement piece movement (left, right, soft drop, hard drop) and rotation with SRS wall kick support
+Implement line clearing, score calculation, level/speed system, and game over detection
 
 ## Acceptance Criteria
-- lib/tetris/movement.ts exists
-- movePiece() handles left/right/down with collision checks
-- rotatePiece() rotates with wall kick offsets per SRS
-- hardDrop() instantly places piece at lowest valid position
+- lib/tetris/scoring.ts exists
+- clearLines() removes full rows and shifts board down
+- Score awards 100/300/500/800 for 1/2/3/4 lines
+- Level increases every 10 lines
+- Drop speed decreases with level
+- Game over detected when new piece collides immediately
 
 ## Rules
 # Rules
