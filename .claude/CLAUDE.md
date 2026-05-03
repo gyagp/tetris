@@ -1,13 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add performance optimizations: React.memo for Board cells, requestAnimationFrame for game loop timing
+Add test script to package.json and verify all tests pass
 
 ## Acceptance Criteria
-- Board cell components are memoized
-- Game loop uses requestAnimationFrame where applicable
-- Gameplay maintains 60fps with no jank
-- No console errors
+- package.json has a 'test' script
+- npm test runs successfully
+- All existing tests pass
 
 ## Rules
 # Rules
