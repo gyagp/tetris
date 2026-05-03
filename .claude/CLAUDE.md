@@ -1,12 +1,13 @@
-# Autopo execute Session
+# Autopo test Session
 
 ## Work Unit
-Add tests for audio integration in GameInstance (event triggers)
+Update page metadata: title, description, SEO meta tags, and Open Graph image in app/layout.tsx
 
 ## Acceptance Criteria
-- Tests verify audio plays on move, rotate, hard drop, line clear, tetris, game over
-- Tests verify audio is lazy-loaded
-- All tests pass
+- Title is 'Tetris' or similar game-specific title
+- Description is game-relevant
+- OG meta tags (og:title, og:description, og:image) are present
+- No build errors
 
 ## Rules
 # Rules
