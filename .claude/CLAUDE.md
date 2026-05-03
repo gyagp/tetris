@@ -1,11 +1,11 @@
-# Autopo execute Session
+# Autopo test Session
 
 ## Work Unit
-Configure Vercel deployment settings in next.config.ts
+Implement core game types and constants: board dimensions, tetromino shapes, colors, and game state interfaces
 
 ## Acceptance Criteria
-- next.config.ts has Vercel-compatible configuration
-- npm run build still succeeds
+- lib/tetris/types.ts exists with Board, Piece, GameState types
+- lib/tetris/constants.ts exists with BOARD_WIDTH=10, BOARD_HEIGHT=20, all 7 tetromino definitions with shapes and colors
 
 ## Rules
 # Rules
