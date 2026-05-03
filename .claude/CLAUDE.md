@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Implement board logic: create empty board, place piece on board, collision detection (walls, floor, placed pieces)
+Implement piece movement (left, right, soft drop, hard drop) and rotation with SRS wall kick support
 
 ## Acceptance Criteria
-- lib/tetris/board.ts exists
-- createBoard() returns 10x20 empty grid
-- checkCollision() detects wall, floor, and piece collisions
-- placePiece() merges piece into board
+- lib/tetris/movement.ts exists
+- movePiece() handles left/right/down with collision checks
+- rotatePiece() rotates with wall kick offsets per SRS
+- hardDrop() instantly places piece at lowest valid position
 
 ## Rules
 # Rules

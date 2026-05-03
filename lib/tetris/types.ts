@@ -10,6 +10,7 @@ export interface Piece {
   shape: number[][];
   color: string;
   position: Position;
+  rotationState?: number;
 }
 
 export interface GameState {
