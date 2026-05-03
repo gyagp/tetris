@@ -17,23 +17,23 @@ const P1_KEYS = {
 };
 
 const P2_KEYS = {
-  left: "j",
-  right: "l",
-  down: "k",
-  rotateCW: "i",
-  rotateCCW: "u",
-  hardDrop: "h",
-  hold: "n",
+  left: "a",
+  right: "d",
+  down: "s",
+  rotateCW: "e",
+  rotateCCW: "q",
+  hardDrop: "Shift",
+  hold: "f",
   pause: "o",
   restart: "m",
-  start: "b",
+  start: "w",
 };
 
 export default function TwoPlayerGame() {
   return (
     <div style={{ display: "flex", gap: 48, flexWrap: "wrap", justifyContent: "center" }}>
       <GameInstance keyBindings={P1_KEYS} label="PLAYER 1 — Arrows / Space / C" />
-      <GameInstance keyBindings={P2_KEYS} label="PLAYER 2 — IJKL / H / N" />
+      <GameInstance keyBindings={P2_KEYS} label="PLAYER 2 — WASD / Shift / F" />
     </div>
   );
 }

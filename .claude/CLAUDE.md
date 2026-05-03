@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Create TwoPlayerGame component that manages two independent game states with separate tick loops
+Implement dual input handling: Player 1 arrow keys, Player 2 WASD + E/Q
 
 ## Acceptance Criteria
-- Two useReducer instances with independent GameState
-- Each has its own setInterval tick loop
-- Both boards render side by side in split screen layout
-- npm run build succeeds
+- Player 1 uses Arrow keys for movement, Up for rotate CW, Z for rotate CCW, Space for hard drop, C for hold
+- Player 2 uses WASD for movement, E for rotate CW, Q for rotate CCW, Shift for hard drop, F for hold
+- Inputs dispatch to correct player's reducer
+- No key conflicts between players
 
 ## Rules
 # Rules
