@@ -238,4 +238,5 @@ class AudioManager {
   }
 }
 
-export { AudioManager, SoundType };
+export { AudioManager };
+export type { SoundType };

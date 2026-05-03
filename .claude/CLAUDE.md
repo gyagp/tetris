@@ -1,13 +1,12 @@
-# Autopo review Session
+# Autopo test Session
 
 ## Work Unit
-Write README with game description, controls, features, and deployment instructions
+Run npm run build and fix any errors or warnings
 
 ## Acceptance Criteria
-- README has game description
-- README lists keyboard controls
-- README lists touch controls
-- README has deployment/build instructions
+- npm run build completes with no errors
+- npm run build produces no warnings
+- Build output is valid
 
 ## Rules
 # Rules

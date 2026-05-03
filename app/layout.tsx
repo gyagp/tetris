@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tetris.vercel.app"),
   title: "Tetris",
   description: "A classic Tetris game built with Next.js. Stack falling tetrominoes, clear lines, and chase high scores!",
   openGraph: {
