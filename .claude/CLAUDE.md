@@ -1,12 +1,12 @@
-# Autopo test Session
+# Autopo execute Session
 
 ## Work Unit
-Add smooth CSS transitions for all UI state changes
+Verify responsive design works on desktop and tablet
 
 ## Acceptance Criteria
-- Score, level, and lines update with smooth transitions
-- Hold and next piece previews transition smoothly when changing
-- All interactive elements have hover/focus transitions
+- Layout is usable at 768px (tablet) and 1024px+ (desktop)
+- All new visual effects render correctly at different sizes
+- No horizontal scrolling at any standard breakpoint
 - npm run build succeeds
 
 ## Rules
