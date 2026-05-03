@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Implement game engine: game loop with useReducer, next piece preview, hold piece, piece spawning with random bag
+Build React game board component rendering the 10x20 grid, current piece, ghost piece, and placed blocks
 
 ## Acceptance Criteria
-- lib/tetris/engine.ts exists with game reducer and tick logic
-- Next piece queue shows upcoming piece
-- Hold piece swaps current piece (once per drop)
-- Random bag generates fair piece sequence
+- components/tetris/Board.tsx exists
+- Renders 10x20 grid with colored cells
+- Shows current piece at its position
+- Shows ghost piece (drop preview) as translucent
 
 ## Rules
 # Rules
