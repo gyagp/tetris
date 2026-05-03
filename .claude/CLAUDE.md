@@ -1,11 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Add screen shake effect on line clears
+Add combo counter state tracking for consecutive line clears
 
 ## Acceptance Criteria
-- Game container shakes briefly when lines are cleared
-- Shake intensity scales with number of lines cleared
+- Game state tracks consecutive clears as a combo counter
+- Combo resets when a piece locks without clearing lines
+- Combo count is accessible for display
 - npm run build succeeds
 
 ## Rules

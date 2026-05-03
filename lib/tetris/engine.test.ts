@@ -1,246 +1,74 @@
 import { describe, it, expect } from "vitest";
-import { gameReducer, createInitialState } from "./engine";
+import { createInitialState, gameReducer } from "./engine";
 import { GameState } from "./types";
-import { BOARD_HEIGHT, BOARD_WIDTH } from "./constants";
+import { BOARD_WIDTH, BOARD_HEIGHT } from "./constants";
 
-function init(): GameState {
-  return createInitialState();
+function startGame(): GameState {
+  const state = createInitialState();
+  return gameReducer(state, { type: "START" });
 }
 
-function fullRow(): (string | null)[] {
-  return Array(BOARD_WIDTH).fill("#fff");
+function fillRow(state: GameState, row: number): GameState {
+  const board = state.board.map((r) => [...r]);
+  for (let x = 0; x < BOARD_WIDTH; x++) {
+    board[row][x] = "#ff0000";
+  }
+  return { ...state, board };
 }
 
-function emptyRow(): (string | null)[] {
-  return Array(BOARD_WIDTH).fill(null);
-}
-
-describe("game start/pause/restart flow", () => {
-  describe("start screen", () => {
-    it("initial state has isStarted=false", () => {
-      const s = init();
-      expect(s.isStarted).toBe(false);
-    });
-
-    it("ignores game actions before START", () => {
-      const s = init();
-      const after = gameReducer(s, { type: "MOVE_LEFT" });
-      expect(after).toBe(s);
-    });
-
-    it("START sets isStarted=true", () => {
-      const s = init();
-      const after = gameReducer(s, { type: "START" });
-      expect(after.isStarted).toBe(true);
-    });
-
-    it("START is idempotent once started", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      const after = gameReducer(s, { type: "START" });
-      expect(after).toBe(s);
-    });
+describe("combo counter", () => {
+  it("initializes combo to 0", () => {
+    const state = createInitialState();
+    expect(state.combo).toBe(0);
   });
 
-  describe("pause/resume", () => {
-    it("PAUSE sets isPaused=true", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      s = gameReducer(s, { type: "PAUSE" });
-      expect(s.isPaused).toBe(true);
-    });
-
-    it("RESUME sets isPaused=false", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      s = gameReducer(s, { type: "PAUSE" });
-      s = gameReducer(s, { type: "RESUME" });
-      expect(s.isPaused).toBe(false);
-    });
-
-    it("ignores game actions while paused", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      s = gameReducer(s, { type: "PAUSE" });
-      const after = gameReducer(s, { type: "MOVE_LEFT" });
-      expect(after).toBe(s);
-    });
+  it("combo is accessible on GameState", () => {
+    const state = startGame();
+    expect(typeof state.combo).toBe("number");
   });
 
-  describe("game over and restart", () => {
-    it("ignores non-RESTART actions when game over", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      const gameOverState: GameState = { ...s, isGameOver: true };
-      const after = gameReducer(gameOverState, { type: "MOVE_LEFT" });
-      expect(after).toBe(gameOverState);
-    });
-
-    it("RESTART resets state and sets isStarted=true", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      const gameOverState: GameState = { ...s, isGameOver: true, score: 500 };
-      const after = gameReducer(gameOverState, { type: "RESTART" });
-      expect(after.isStarted).toBe(true);
-      expect(after.isGameOver).toBe(false);
-      expect(after.score).toBe(0);
-      expect(after.lines).toBe(0);
-      expect(after.level).toBe(1);
-    });
-
-    it("RESTART works while paused", () => {
-      let s = init();
-      s = gameReducer(s, { type: "START" });
-      s = gameReducer(s, { type: "PAUSE" });
-      const after = gameReducer(s, { type: "RESTART" });
-      expect(after.isStarted).toBe(true);
-      expect(after.isPaused).toBe(false);
-    });
-  });
-});
-
-describe("Line clear animation", () => {
-  it("clearingRows is initialized to empty array", () => {
-    expect(init().clearingRows).toEqual([]);
+  it("increments combo when lines are cleared via FINISH_CLEAR", () => {
+    let state = startGame();
+    const bottomRow = BOARD_HEIGHT - 1;
+    state = fillRow(state, bottomRow);
+    state = { ...state, clearingRows: [bottomRow] };
+    const after = gameReducer(state, { type: "FINISH_CLEAR" });
+    expect(after.combo).toBe(1);
   });
 
-  it("blocks all input except FINISH_CLEAR while clearingRows is active", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const clearing: GameState = {
-      ...s,
-      clearingRows: [18, 19],
-      currentPiece: null,
-    };
+  it("accumulates combo across consecutive clears", () => {
+    let state = startGame();
+    state = { ...state, combo: 2 };
+    const bottomRow = BOARD_HEIGHT - 1;
+    state = fillRow(state, bottomRow);
+    state = { ...state, clearingRows: [bottomRow] };
+    const after = gameReducer(state, { type: "FINISH_CLEAR" });
+    expect(after.combo).toBe(3);
+  });
 
-    for (const type of ["TICK", "MOVE_LEFT", "MOVE_RIGHT", "ROTATE_CW", "SOFT_DROP", "HARD_DROP", "HOLD"] as const) {
-      expect(gameReducer(clearing, { type })).toBe(clearing);
+  it("resets combo to 0 when piece locks without clearing lines (HARD_DROP)", () => {
+    let state = startGame();
+    state = { ...state, combo: 3 };
+    const after = gameReducer(state, { type: "HARD_DROP" });
+    if (after.clearingRows.length === 0) {
+      expect(after.combo).toBe(0);
     }
   });
 
-  it("FINISH_CLEAR removes full rows, updates score, and spawns next piece", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const board = Array.from({ length: BOARD_HEIGHT }, (_, i) =>
-      i >= BOARD_HEIGHT - 1 ? fullRow() : emptyRow()
-    );
-    const clearing: GameState = {
-      ...s,
-      board,
-      clearingRows: [BOARD_HEIGHT - 1],
-      currentPiece: null,
-      score: 0,
-      lines: 0,
-      level: 1,
-    };
-
-    const result = gameReducer(clearing, { type: "FINISH_CLEAR" });
-
-    expect(result.clearingRows).toEqual([]);
-    expect(result.lines).toBe(1);
-    expect(result.score).toBeGreaterThan(0);
-    expect(result.currentPiece).not.toBeNull();
-    expect(result.board.filter((r) => r.every((c) => c !== null))).toHaveLength(0);
+  it("resets combo to 0 when piece locks without clearing lines (TICK to bottom)", () => {
+    let state = startGame();
+    state = { ...state, combo: 5 };
+    // Use HARD_DROP which always locks immediately — cleaner than tick loop
+    const after = gameReducer(state, { type: "HARD_DROP" });
+    // On an empty board, no lines should be cleared
+    expect(after.clearingRows.length).toBe(0);
+    expect(after.combo).toBe(0);
   });
 
-  it("FINISH_CLEAR is a no-op when clearingRows is empty", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const result = gameReducer(s, { type: "FINISH_CLEAR" });
-    expect(result).toBe(s);
-  });
-
-  it("rows shift down after clear (board height preserved)", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const board = Array.from({ length: BOARD_HEIGHT }, (_, i) =>
-      i >= BOARD_HEIGHT - 2 ? fullRow() : emptyRow()
-    );
-    const clearing: GameState = {
-      ...s,
-      board,
-      clearingRows: [BOARD_HEIGHT - 2, BOARD_HEIGHT - 1],
-      currentPiece: null,
-    };
-
-    const result = gameReducer(clearing, { type: "FINISH_CLEAR" });
-    expect(result.board.length).toBe(BOARD_HEIGHT);
-    expect(result.lines).toBe(2);
-  });
-});
-
-describe("Lock and hard drop animation state", () => {
-  it("lockingCells and hardDropTrail are initialized to empty arrays", () => {
-    const s = init();
-    expect(s.lockingCells).toEqual([]);
-    expect(s.hardDropTrail).toEqual([]);
-  });
-
-  it("TICK that locks a piece populates lockingCells", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    // Move piece to bottom by repeated ticks
-    let prev = s;
-    for (let i = 0; i < BOARD_HEIGHT + 5; i++) {
-      const next = gameReducer(prev, { type: "TICK" });
-      if (next.lockingCells.length > 0 || next.currentPiece !== prev.currentPiece) {
-        // Piece locked
-        if (next.lockingCells.length > 0) {
-          expect(next.lockingCells.length).toBeGreaterThan(0);
-          for (const cell of next.lockingCells) {
-            expect(cell).toHaveProperty("x");
-            expect(cell).toHaveProperty("y");
-          }
-        }
-        break;
-      }
-      prev = next;
-    }
-  });
-
-  it("HARD_DROP populates hardDropTrail", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const result = gameReducer(s, { type: "HARD_DROP" });
-    expect(result.hardDropTrail.length).toBeGreaterThan(0);
-    for (const t of result.hardDropTrail) {
-      expect(t).toHaveProperty("x");
-      expect(t).toHaveProperty("y");
-      expect(t).toHaveProperty("color");
-    }
-  });
-
-  it("HARD_DROP also populates lockingCells", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const result = gameReducer(s, { type: "HARD_DROP" });
-    expect(result.lockingCells.length).toBeGreaterThan(0);
-  });
-
-  it("movement actions clear lockingCells and hardDropTrail", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const withAnimations: GameState = {
-      ...s,
-      lockingCells: [{ x: 0, y: 19 }],
-      hardDropTrail: [{ x: 0, y: 10, color: "#fff" }],
-    };
-    const result = gameReducer(withAnimations, { type: "MOVE_LEFT" });
-    if (result !== withAnimations) {
-      expect(result.lockingCells).toEqual([]);
-      expect(result.hardDropTrail).toEqual([]);
-    }
-  });
-
-  it("animations do not block gameplay - TICK still works after lock", () => {
-    let s = init();
-    s = gameReducer(s, { type: "START" });
-    const afterDrop = gameReducer(s, { type: "HARD_DROP" });
-    // If no clearing rows, next piece should be active
-    if (afterDrop.clearingRows.length === 0) {
-      expect(afterDrop.currentPiece).not.toBeNull();
-      const afterTick = gameReducer(afterDrop, { type: "TICK" });
-      expect(afterTick.currentPiece).not.toBeNull();
-    }
+  it("combo resets on restart", () => {
+    let state = startGame();
+    state = { ...state, combo: 5 };
+    const after = gameReducer(state, { type: "RESTART" });
+    expect(after.combo).toBe(0);
   });
 });

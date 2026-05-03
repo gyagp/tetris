@@ -73,6 +73,7 @@ export function createInitialState(): GameState {
     clearingRows: [],
     lockingCells: [],
     hardDropTrail: [],
+    combo: 0,
   };
 }
 
@@ -106,7 +107,7 @@ function lockAndAdvance(state: GameState): GameState {
   }
 
   const result = advanceWithoutClear(state, boardAfterPlace);
-  return { ...result, lockingCells };
+  return { ...result, lockingCells, combo: 0 };
 }
 
 function advanceWithoutClear(state: GameState, board: GameState["board"]): GameState {
@@ -140,7 +141,7 @@ function finishClear(state: GameState): GameState {
   const newScore = state.score + calculateScore(linesCleared, state.level);
 
   const result = advanceWithoutClear(
-    { ...state, lines: newLines, level: newLevel, score: newScore },
+    { ...state, lines: newLines, level: newLevel, score: newScore, combo: state.combo + 1 },
     boardAfterClear
   );
   return result;

@@ -29,4 +29,5 @@ export interface GameState {
   clearingRows: number[];
   lockingCells: { x: number; y: number }[];
   hardDropTrail: { x: number; y: number; color: string }[];
+  combo: number;
 }
