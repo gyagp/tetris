@@ -1,13 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Update page metadata: title, description, SEO meta tags, and Open Graph image in app/layout.tsx
+Add mobile-friendly touch controls for single player (swipe left/right to move, swipe down for soft drop, tap to rotate, swipe up for hard drop)
 
 ## Acceptance Criteria
-- Title is 'Tetris' or similar game-specific title
-- Description is game-relevant
-- OG meta tags (og:title, og:description, og:image) are present
-- No build errors
+- Touch event handlers exist in GameInstance or a dedicated component
+- Swipe gestures map to move, rotate, drop actions
+- Controls work on mobile viewport sizes
+- No console errors
 
 ## Rules
 # Rules

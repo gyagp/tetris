@@ -6,6 +6,7 @@ import Sidebar from "@/components/tetris/Sidebar";
 import { gameReducer, createInitialState } from "@/lib/tetris/engine";
 import { getDropInterval } from "@/lib/tetris/scoring";
 import { AudioManager } from "@/lib/tetris/audio";
+import { useTouchControls } from "@/lib/tetris/useTouchControls";
 
 interface KeyBindings {
   left: string;
@@ -122,6 +123,19 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+  const touchActions = useCallback(() => {
+    const audio = AudioManager.getInstance();
+    return {
+      onLeft: () => { dispatch({ type: "MOVE_LEFT" }); audio.play("move"); },
+      onRight: () => { dispatch({ type: "MOVE_RIGHT" }); audio.play("move"); },
+      onSoftDrop: () => { dispatch({ type: "SOFT_DROP" }); audio.play("move"); },
+      onHardDrop: () => { dispatch({ type: "HARD_DROP" }); audio.play("hardDrop"); },
+      onRotate: () => { dispatch({ type: "ROTATE_CW" }); audio.play("rotate"); },
+    };
+  }, []);
+  useTouchControls(gameContainerRef, touchActions(), state.isStarted && !state.isGameOver && !state.isPaused);
+
   const [comboDisplay, setComboDisplay] = useState<number>(0);
   const [comboExiting, setComboExiting] = useState(false);
 
@@ -174,19 +188,19 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
           {label}
         </div>
       )}
-      <div className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
+      <div ref={gameContainerRef} className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
         <div style={{ position: "relative" }}>
           <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
           {!state.isStarted && (
-            <div style={{
+            <div onClick={() => dispatch({ type: "START" })} style={{
               position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
+              alignItems: "center", justifyContent: "center", cursor: "pointer",
               backgroundColor: "rgba(5, 0, 20, 0.9)", border: "1px solid rgba(0, 200, 255, 0.2)",
               color: "#fff", gap: 16, animation: "overlay-fade-scale 0.5s ease-out",
             }}>
               <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite", letterSpacing: 6 }}>TETRIS</div>
               <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>
-                Press {keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} to Start
+                Tap or press {keyBindings.start === "Enter" ? "Enter" : `"${keyBindings.start}"`} to Start
               </div>
             </div>
           )}
@@ -200,9 +214,9 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
             </div>
           )}
           {state.isGameOver && (
-            <div style={{
+            <div onClick={() => dispatch({ type: "RESTART" })} style={{
               position: "absolute", inset: 0, display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
+              alignItems: "center", justifyContent: "center", cursor: "pointer",
               backgroundColor: "rgba(5, 0, 20, 0.85)", color: "#fff", fontSize: 28, fontWeight: "bold",
               gap: 12, animation: "overlay-fade-scale 0.4s ease-out",
             }}>
