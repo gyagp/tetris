@@ -1,12 +1,13 @@
-# Autopo test Session
+# Autopo execute Session
 
 ## Work Unit
-Add volume/mute UI control to Sidebar component
+Add tests for AudioManager sound effects and volume control
 
 ## Acceptance Criteria
-- Mute/unmute button visible in sidebar
-- Volume slider or toggle works
-- UI reflects current mute/volume state
+- Tests for each sound effect method
+- Tests for volume control and mute toggle
+- Tests for lazy initialization
+- All tests pass
 
 ## Rules
 # Rules
