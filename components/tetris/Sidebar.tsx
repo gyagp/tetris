@@ -76,6 +76,7 @@ interface SidebarProps {
   score: number;
   level: number;
   lines: number;
+  highScore: number;
 }
 
 function AnimatedValue({ value }: { value: number }) {
@@ -170,7 +171,7 @@ function VolumeControl() {
   );
 }
 
-export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines }: SidebarProps) {
+export default function Sidebar({ className, nextPiece, holdPiece, score, level, lines, highScore }: SidebarProps) {
   const panelStyle: React.CSSProperties = {
     background: "rgba(10, 0, 20, 0.7)",
     border: "1px solid var(--theme-border, rgba(0, 200, 255, 0.3))",
@@ -215,6 +216,10 @@ export default function Sidebar({ className, nextPiece, holdPiece, score, level,
       <div className="stat-panel" style={panelStyle}>
         <div style={labelStyle}>Score</div>
         <div style={valueStyle}><AnimatedValue value={score} /></div>
+      </div>
+      <div className="stat-panel" style={panelStyle}>
+        <div style={labelStyle}>High Score</div>
+        <div style={valueStyle}><AnimatedValue value={highScore} /></div>
       </div>
       <div className="stat-panel" style={panelStyle}>
         <div style={labelStyle}>Level</div>

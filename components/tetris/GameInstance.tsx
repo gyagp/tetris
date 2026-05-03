@@ -42,10 +42,24 @@ interface GameInstanceProps {
   onGameOver?: () => void;
 }
 
+const HIGH_SCORE_KEY = "tetris-high-score";
+
 const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function GameInstance({ keyBindings, label, theme, onLinesCleared, onGameOver }, ref) {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  const [highScore, setHighScore] = useState(0);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(HIGH_SCORE_KEY);
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) setHighScore(parsed);
+      }
+    } catch {}
+  }, []);
 
   useImperativeHandle(ref, () => ({
     sendGarbage: (lines: number) => dispatch({ type: "RECEIVE_GARBAGE", lines }),
@@ -88,6 +102,12 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
   useEffect(() => {
     if (state.isGameOver && state.isStarted) {
       AudioManager.getInstance().play("gameOver");
+      if (state.score > highScore) {
+        setHighScore(state.score);
+        try {
+          localStorage.setItem(HIGH_SCORE_KEY, String(state.score));
+        } catch {}
+      }
       onGameOverRef.current?.();
     }
   }, [state.isGameOver, state.isStarted]);
@@ -280,7 +300,7 @@ const GameInstance = forwardRef<GameInstanceHandle, GameInstanceProps>(function 
             </div>
           )}
         </div>
-        <Sidebar className="game-sidebar" nextPiece={state.nextPiece} holdPiece={state.holdPiece} score={state.score} level={state.level} lines={state.lines} />
+        <Sidebar className="game-sidebar" nextPiece={state.nextPiece} holdPiece={state.holdPiece} score={state.score} level={state.level} lines={state.lines} highScore={highScore} />
       </div>
     </div>
   );

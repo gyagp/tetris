@@ -41,7 +41,7 @@ const I_PIECE: Piece = {
   position: { x: 0, y: 0 },
 };
 
-const sidebarProps = { nextPiece: null, holdPiece: null, score: 0, level: 1, lines: 0 };
+const sidebarProps = { nextPiece: null, holdPiece: null, score: 0, level: 1, lines: 0, highScore: 0 };
 
 describe("Sidebar VolumeControl", () => {
   beforeEach(() => {
@@ -130,10 +130,10 @@ describe("Sidebar CSS transitions", () => {
   describe("Score, level, and lines update with smooth transitions", () => {
     it("AnimatedValue spans have CSS transition property", () => {
       const { container } = render(
-        <Sidebar nextPiece={null} holdPiece={null} score={100} level={1} lines={5} />
+        <Sidebar nextPiece={null} holdPiece={null} score={100} level={1} lines={5} highScore={0} />
       );
       const spans = container.querySelectorAll(".stat-panel div:nth-child(2) span");
-      expect(spans.length).toBe(3);
+      expect(spans.length).toBe(4);
       spans.forEach((span) => {
         const el = span as HTMLElement;
         expect(el.style.transition).toContain("transform");
@@ -204,7 +204,7 @@ describe("Sidebar CSS transitions", () => {
         <Sidebar nextPiece={null} holdPiece={null} score={0} level={1} lines={0} />
       );
       const panels = container.querySelectorAll(".stat-panel");
-      expect(panels.length).toBe(3);
+      expect(panels.length).toBe(4);
       panels.forEach((panel) => {
         const t = (panel as HTMLElement).style.transition;
         expect(t).toContain("border-color");
