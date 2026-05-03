@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import Home from "./page";
 
@@ -16,12 +16,14 @@ describe("Responsive layout", () => {
 
   it("game-container class exists for layout", () => {
     const { container } = render(<Home />);
+    fireEvent.click(screen.getByText("1 PLAYER"));
     const gameContainer = container.querySelector(".game-container");
     expect(gameContainer).toBeTruthy();
   });
 
   it("sidebar has game-sidebar class for responsive targeting", () => {
     const { container } = render(<Home />);
+    fireEvent.click(screen.getByText("1 PLAYER"));
     const sidebar = container.querySelector(".game-sidebar");
     expect(sidebar).toBeTruthy();
   });

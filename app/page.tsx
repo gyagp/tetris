@@ -1,143 +1,49 @@
 "use client";
 
-import React, { useReducer, useEffect, useCallback, useRef, useState } from "react";
-import Board from "@/components/tetris/Board";
-import Sidebar from "@/components/tetris/Sidebar";
-import { gameReducer, createInitialState } from "@/lib/tetris/engine";
-import { getDropInterval } from "@/lib/tetris/scoring";
+import React, { useState } from "react";
+import GameInstance from "@/components/tetris/GameInstance";
+
+const P1_KEYS = {
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  down: "ArrowDown",
+  rotateCW: "ArrowUp",
+  rotateCCW: "z",
+  hardDrop: " ",
+  hold: "c",
+  pause: "p",
+  restart: "r",
+  start: "Enter",
+};
+
+const P2_KEYS = {
+  left: "j",
+  right: "l",
+  down: "k",
+  rotateCW: "i",
+  rotateCCW: "u",
+  hardDrop: "h",
+  hold: "n",
+  pause: "o",
+  restart: "m",
+  start: "b",
+};
 
 export default function Home() {
-  const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
-  const stateRef = useRef(state);
-  stateRef.current = state;
-
-  const [shakeIntensity, setShakeIntensity] = useState(0);
-  const [showTSpin, setShowTSpin] = useState(false);
-  const [tSpinExiting, setTSpinExiting] = useState(false);
-  const [showTetris, setShowTetris] = useState(false);
-  const [tetrisExiting, setTetrisExiting] = useState(false);
-
-  useEffect(() => {
-    if (state.clearingRows.length > 0) {
-      setShakeIntensity(state.clearingRows.length);
-      const shakeTimer = setTimeout(() => setShakeIntensity(0), 300);
-      const timer = setTimeout(() => dispatch({ type: "FINISH_CLEAR" }), 400);
-      if (state.clearingRows.length === 4) {
-        setShowTetris(true);
-        setTetrisExiting(false);
-        const exitTimer = setTimeout(() => setTetrisExiting(true), 1000);
-        const hideTimer = setTimeout(() => { setShowTetris(false); setTetrisExiting(false); }, 1500);
-        return () => { clearTimeout(shakeTimer); clearTimeout(timer); clearTimeout(exitTimer); clearTimeout(hideTimer); };
-      }
-      if (state.tSpin) {
-        setShowTSpin(true);
-        setTSpinExiting(false);
-        const exitTimer = setTimeout(() => setTSpinExiting(true), 800);
-        const hideTimer = setTimeout(() => { setShowTSpin(false); setTSpinExiting(false); }, 1200);
-        return () => { clearTimeout(shakeTimer); clearTimeout(timer); clearTimeout(exitTimer); clearTimeout(hideTimer); };
-      }
-      return () => { clearTimeout(timer); clearTimeout(shakeTimer); };
-    }
-  }, [state.clearingRows]);
-
-  useEffect(() => {
-    if (!state.isStarted || state.isGameOver || state.isPaused) return;
-    const interval = getDropInterval(state.level);
-    const timer = setInterval(() => dispatch({ type: "TICK" }), interval);
-    return () => clearInterval(timer);
-  }, [state.level, state.isGameOver, state.isPaused, state.isStarted]);
-
-  const handleKey = useCallback((e: KeyboardEvent) => {
-    const s = stateRef.current;
-    switch (e.key) {
-      case "ArrowLeft":
-        e.preventDefault();
-        dispatch({ type: "MOVE_LEFT" });
-        break;
-      case "ArrowRight":
-        e.preventDefault();
-        dispatch({ type: "MOVE_RIGHT" });
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        dispatch({ type: "SOFT_DROP" });
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        dispatch({ type: "ROTATE_CW" });
-        break;
-      case "z":
-      case "Z":
-        dispatch({ type: "ROTATE_CCW" });
-        break;
-      case " ":
-        e.preventDefault();
-        dispatch({ type: "HARD_DROP" });
-        break;
-      case "c":
-      case "C":
-        dispatch({ type: "HOLD" });
-        break;
-      case "p":
-      case "P":
-        dispatch(s.isPaused ? { type: "RESUME" } : { type: "PAUSE" });
-        break;
-      case "r":
-      case "R":
-        if (s.isGameOver) dispatch({ type: "RESTART" });
-        break;
-      case "Enter":
-        if (!s.isStarted) dispatch({ type: "START" });
-        else if (s.isGameOver) dispatch({ type: "RESTART" });
-        break;
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [handleKey]);
-
-  const [comboDisplay, setComboDisplay] = useState<number>(0);
-  const [comboExiting, setComboExiting] = useState(false);
-
-  useEffect(() => {
-    if (state.combo >= 2) {
-      setComboDisplay(state.combo);
-      setComboExiting(false);
-    } else if (comboDisplay > 0) {
-      setComboExiting(true);
-      const t = setTimeout(() => { setComboDisplay(0); setComboExiting(false); }, 600);
-      return () => clearTimeout(t);
-    }
-  }, [state.combo]);
-
-  const [showPause, setShowPause] = useState(false);
-  const [pauseExiting, setPauseExiting] = useState(false);
-  const isPaused = state.isStarted && state.isPaused;
-
-  useEffect(() => {
-    if (isPaused) {
-      setShowPause(true);
-      setPauseExiting(false);
-    } else if (showPause) {
-      setPauseExiting(true);
-      const t = setTimeout(() => { setShowPause(false); setPauseExiting(false); }, 300);
-      return () => clearTimeout(t);
-    }
-  }, [isPaused]);
+  const [mode, setMode] = useState<"select" | "1p" | "2p">("select");
 
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
+        flexDirection: "column",
+        justifyContent: mode === "select" ? "center" : "flex-start",
+        alignItems: "center",
         minHeight: "100vh",
         background: "linear-gradient(135deg, #0a0014, #001a1a, #0a0020, #001414)",
         backgroundSize: "400% 400%",
         animation: "bg-gradient-shift 15s ease infinite",
-        paddingTop: 40,
+        paddingTop: mode === "select" ? 0 : 40,
         overflow: "hidden",
       }}
     >
@@ -286,217 +192,69 @@ export default function Home() {
           0% { opacity: 1; transform: translate(0, 0) scale(1); }
           100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
         }
+        @keyframes mode-btn-glow {
+          0%, 100% { box-shadow: 0 0 10px rgba(0,255,255,0.2), inset 0 0 10px rgba(0,255,255,0.05); }
+          50% { box-shadow: 0 0 20px rgba(0,255,255,0.4), inset 0 0 20px rgba(0,255,255,0.1); }
+        }
       `}</style>
-      <div className="game-container" style={shakeIntensity > 0 ? { animation: `screen-shake-${Math.min(shakeIntensity, 4)} 300ms ease-out` } : undefined}>
-      <div style={{ position: "relative" }}>
-        <Board board={state.board} currentPiece={state.currentPiece} clearingRows={state.clearingRows} lockingCells={state.lockingCells} hardDropTrail={state.hardDropTrail} />
-        {!state.isStarted && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(5, 0, 20, 0.9)",
-              border: "1px solid rgba(0, 200, 255, 0.2)",
-              color: "#fff",
-              gap: 16,
-              animation: "overlay-fade-scale 0.5s ease-out",
-            }}
-          >
-            <div style={{ fontSize: 40, fontWeight: "bold", animation: "title-shimmer 2s ease-in-out infinite", letterSpacing: 6 }}>TETRIS</div>
-            <div style={{ fontSize: 14, animation: "prompt-pulse 2s ease-in-out infinite", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>Press Enter to Start</div>
+
+      {mode === "select" && (
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 32,
+          animation: "overlay-fade-scale 0.5s ease-out",
+        }}>
+          <div style={{
+            fontSize: 56, fontWeight: "bold", letterSpacing: 8, color: "#fff",
+            animation: "title-shimmer 2s ease-in-out infinite",
+          }}>
+            TETRIS
           </div>
-        )}
-        {showPause && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(5, 0, 20, 0.85)",
-              color: "#fff",
-              fontSize: 32,
-              fontWeight: "bold",
-              animation: pauseExiting ? "overlay-fade-out 0.3s ease-in forwards" : "overlay-fade-scale 0.3s ease-out",
-            }}
-          >
-            <div style={{ fontSize: 32, animation: "title-shimmer 2.5s ease-in-out infinite", letterSpacing: 4 }}>PAUSED</div>
-          </div>
-        )}
-        {state.isGameOver && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(5, 0, 20, 0.85)",
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: "bold",
-              gap: 12,
-              animation: "overlay-fade-scale 0.4s ease-out",
-            }}
-          >
-            <div style={{ animation: "game-over-entrance 0.6s ease-out", color: "#ff3366", textShadow: "0 0 10px rgba(255, 51, 102, 0.6), 0 0 30px rgba(255, 51, 102, 0.3)" }}>GAME OVER</div>
-            <div style={{ fontSize: 18, fontWeight: "normal", color: "#0ff", textShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }}>Score: {state.score}</div>
-            <div style={{ fontSize: 14, fontWeight: "normal", animation: "prompt-pulse 2s ease-in-out infinite", color: "rgba(200, 130, 255, 0.8)" }}>Press Enter or R to restart</div>
-          </div>
-        )}
-        {comboDisplay > 0 && (() => {
-          const tier = Math.min(comboDisplay, 10);
-          const colors = ["#00ccff", "#00ff88", "#ffcc00", "#ff6600", "#ff0044"];
-          const color = colors[Math.min(Math.floor((tier - 2) / 2), colors.length - 1)];
-          const fontSize = 20 + tier * 2;
-          const glowSize = tier * 4;
-          return (
-            <div
-              key={comboDisplay}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <button
+              onClick={() => setMode("1p")}
               style={{
-                position: "absolute",
-                top: 60,
-                left: 0,
-                right: 0,
-                display: "flex",
-                justifyContent: "center",
-                pointerEvents: "none",
-                animation: comboExiting
-                  ? "combo-exit 0.6s ease-in forwards"
-                  : "combo-enter 0.4s ease-out, combo-pulse 0.8s ease-in-out 0.4s infinite",
-                zIndex: 10,
+                padding: "16px 48px", fontSize: 20, fontWeight: "bold", letterSpacing: 3,
+                background: "rgba(0, 30, 40, 0.8)", color: "#0ff",
+                border: "1px solid rgba(0, 200, 255, 0.4)", borderRadius: 8,
+                cursor: "pointer", animation: "mode-btn-glow 2s ease-in-out infinite",
+                transition: "all 0.2s ease",
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0, 60, 80, 0.9)"; e.currentTarget.style.borderColor = "rgba(0, 255, 255, 0.8)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0, 30, 40, 0.8)"; e.currentTarget.style.borderColor = "rgba(0, 200, 255, 0.4)"; }}
             >
-              <div
-                style={{
-                  fontSize,
-                  fontWeight: "bold",
-                  color,
-                  textShadow: `0 0 ${glowSize}px ${color}, 0 0 ${glowSize * 2}px ${color}80`,
-                  letterSpacing: 2,
-                }}
-              >
-                {comboDisplay}x COMBO
-              </div>
-            </div>
-          );
-        })()}
-        {showTSpin && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-              zIndex: 15,
-            }}
-          >
-            <div
+              1 PLAYER
+            </button>
+            <button
+              onClick={() => setMode("2p")}
               style={{
-                position: "absolute",
-                inset: 0,
-                background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)",
-                animation: "tspin-flash 1s ease-out forwards",
+                padding: "16px 48px", fontSize: 20, fontWeight: "bold", letterSpacing: 3,
+                background: "rgba(0, 30, 40, 0.8)", color: "#0ff",
+                border: "1px solid rgba(0, 200, 255, 0.4)", borderRadius: 8,
+                cursor: "pointer", animation: "mode-btn-glow 2s ease-in-out infinite",
+                transition: "all 0.2s ease",
               }}
-            />
-            <div
-              style={{
-                fontSize: 36,
-                fontWeight: "bold",
-                color: "#c084fc",
-                letterSpacing: 4,
-                animation: tSpinExiting
-                  ? "tspin-exit 0.4s ease-in forwards"
-                  : "tspin-enter 0.5s ease-out, tspin-glow 0.6s ease-in-out 0.5s infinite",
-              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(0, 60, 80, 0.9)"; e.currentTarget.style.borderColor = "rgba(0, 255, 255, 0.8)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(0, 30, 40, 0.8)"; e.currentTarget.style.borderColor = "rgba(0, 200, 255, 0.4)"; }}
             >
-              T-SPIN
-            </div>
+              2 PLAYERS
+            </button>
           </div>
-        )}
-        {showTetris && (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-              zIndex: 20,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "radial-gradient(circle, rgba(251,191,36,0.5) 0%, rgba(245,158,11,0.2) 40%, transparent 70%)",
-                animation: "tetris-flash 1.2s ease-out forwards",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: "-50%",
-                background: "conic-gradient(from 0deg, transparent 0%, rgba(251,191,36,0.3) 5%, transparent 10%, transparent 15%, rgba(251,191,36,0.2) 20%, transparent 25%)",
-                animation: "tetris-rays 1.5s linear forwards",
-              }}
-            />
-            {Array.from({ length: 12 }).map((_, i) => {
-              const angle = (i / 12) * 360;
-              const dist = 80 + Math.random() * 60;
-              const tx = Math.cos((angle * Math.PI) / 180) * dist;
-              const ty = Math.sin((angle * Math.PI) / 180) * dist;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    position: "absolute",
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: ["#fbbf24", "#f59e0b", "#fde68a", "#fff"][i % 4],
-                    boxShadow: `0 0 6px ${["#fbbf24", "#f59e0b", "#fde68a", "#fff"][i % 4]}`,
-                    ["--tx" as string]: `${tx}px`,
-                    ["--ty" as string]: `${ty}px`,
-                    animation: `tetris-particle ${0.6 + Math.random() * 0.4}s ease-out ${i * 0.03}s forwards`,
-                  }}
-                />
-              );
-            })}
-            <div
-              style={{
-                fontSize: 42,
-                fontWeight: "bold",
-                color: "#fbbf24",
-                letterSpacing: 6,
-                animation: tetrisExiting
-                  ? "tetris-exit 0.5s ease-in forwards"
-                  : "tetris-enter 0.6s ease-out, tetris-glow 0.5s ease-in-out 0.6s infinite",
-              }}
-            >
-              TETRIS!
-            </div>
+          <div style={{ fontSize: 12, color: "rgba(0,255,255,0.4)", marginTop: 8 }}>
+            Select a mode to begin
           </div>
-        )}
-      </div>
-      <Sidebar
-        className="game-sidebar"
-        nextPiece={state.nextPiece}
-        holdPiece={state.holdPiece}
-        score={state.score}
-        level={state.level}
-        lines={state.lines}
-      />
-      </div>
+        </div>
+      )}
+
+      {mode === "1p" && (
+        <GameInstance keyBindings={P1_KEYS} />
+      )}
+
+      {mode === "2p" && (
+        <div style={{ display: "flex", gap: 48, flexWrap: "wrap", justifyContent: "center" }}>
+          <GameInstance keyBindings={P1_KEYS} label="PLAYER 1 — Arrows / Space / C" />
+          <GameInstance keyBindings={P2_KEYS} label="PLAYER 2 — IJKL / H / N" />
+        </div>
+      )}
     </div>
   );
 }

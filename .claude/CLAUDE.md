@@ -1,12 +1,12 @@
-# Autopo execute Session
+# Autopo test Session
 
 ## Work Unit
-Verify responsive design works on desktop and tablet
+Add mode selection screen (1 Player / 2 Players) to the main page
 
 ## Acceptance Criteria
-- Layout is usable at 768px (tablet) and 1024px+ (desktop)
-- All new visual effects render correctly at different sizes
-- No horizontal scrolling at any standard breakpoint
+- Mode selection UI renders on load
+- Selecting 1 Player starts existing single-player game
+- Selecting 2 Players transitions to two-player layout
 - npm run build succeeds
 
 ## Rules
