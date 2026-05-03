@@ -1,15 +1,13 @@
 # Autopo test Session
 
 ## Work Unit
-Implement line clearing, score calculation, level/speed system, and game over detection
+Implement game engine: game loop with useReducer, next piece preview, hold piece, piece spawning with random bag
 
 ## Acceptance Criteria
-- lib/tetris/scoring.ts exists
-- clearLines() removes full rows and shifts board down
-- Score awards 100/300/500/800 for 1/2/3/4 lines
-- Level increases every 10 lines
-- Drop speed decreases with level
-- Game over detected when new piece collides immediately
+- lib/tetris/engine.ts exists with game reducer and tick logic
+- Next piece queue shows upcoming piece
+- Hold piece swaps current piece (once per drop)
+- Random bag generates fair piece sequence
 
 ## Rules
 # Rules
