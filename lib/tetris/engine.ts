@@ -19,7 +19,8 @@ export type GameAction =
   | { type: "RESUME" }
   | { type: "RESTART" }
   | { type: "START" }
-  | { type: "FINISH_CLEAR" };
+  | { type: "FINISH_CLEAR" }
+  | { type: "RECEIVE_GARBAGE"; lines: number; gapColumn?: number };
 
 function shuffleBag(): string[] {
   const bag = [...PIECE_KEYS];
@@ -182,6 +183,32 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
   if (state.isGameOver && action.type !== "RESTART") return state;
   if (action.type === "FINISH_CLEAR") return finishClear(state);
   if (state.clearingRows.length > 0) return state;
+  if (action.type === "RECEIVE_GARBAGE") {
+    if (state.isGameOver) return state;
+    const { lines, gapColumn } = action;
+    if (lines <= 0) return state;
+    const gap = gapColumn ?? Math.floor(Math.random() * BOARD_WIDTH);
+    const garbageRows: GameState["board"] = Array.from({ length: lines }, () => {
+      const row = Array(BOARD_WIDTH).fill("gray");
+      row[gap] = null;
+      return row;
+    });
+    const newBoard = [...state.board.slice(lines), ...garbageRows];
+    const topRows = state.board.slice(0, lines);
+    const overflow = topRows.some((row) => row.some((cell) => cell !== null));
+    if (overflow) {
+      return { ...state, board: newBoard, isGameOver: true };
+    }
+    const newState = { ...state, board: newBoard };
+    if (state.currentPiece) {
+      const pushed = {
+        ...state.currentPiece,
+        position: { ...state.currentPiece.position, y: state.currentPiece.position.y - lines },
+      };
+      newState.currentPiece = pushed;
+    }
+    return newState;
+  }
   if (state.isPaused && action.type !== "RESUME" && action.type !== "RESTART") return state;
 
   switch (action.type) {

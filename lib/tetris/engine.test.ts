@@ -254,3 +254,66 @@ describe("T-spin detection", () => {
     expect(result.lastAction).toBe("ROTATE_CCW");
   });
 });
+
+describe("RECEIVE_GARBAGE", () => {
+  it("inserts N garbage rows at the bottom of the board", () => {
+    const state = makeState();
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 2, gapColumn: 3 });
+    expect(result.board[BOARD_HEIGHT - 1][0]).toBe("gray");
+    expect(result.board[BOARD_HEIGHT - 1][3]).toBe(null);
+    expect(result.board[BOARD_HEIGHT - 2][0]).toBe("gray");
+    expect(result.board[BOARD_HEIGHT - 2][3]).toBe(null);
+  });
+
+  it("shifts existing rows up", () => {
+    let state = makeState();
+    const board = createBoard();
+    board[BOARD_HEIGHT - 1][5] = "#ff0000";
+    state = { ...state, board };
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 1, gapColumn: 0 });
+    expect(result.board[BOARD_HEIGHT - 2][5]).toBe("#ff0000");
+    expect(result.board[BOARD_HEIGHT - 1][0]).toBe(null);
+    expect(result.board[BOARD_HEIGHT - 1][1]).toBe("gray");
+  });
+
+  it("triggers game over when pushed rows overflow the board", () => {
+    let state = makeState();
+    const board = createBoard();
+    board[0][5] = "#ff0000";
+    state = { ...state, board };
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 1, gapColumn: 0 });
+    expect(result.isGameOver).toBe(true);
+  });
+
+  it("does not trigger game over when top rows are empty", () => {
+    const state = makeState();
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 5, gapColumn: 0 });
+    expect(result.isGameOver).toBe(false);
+  });
+
+  it("does nothing when lines is 0", () => {
+    const state = makeState();
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 0, gapColumn: 0 });
+    expect(result).toEqual(state);
+  });
+
+  it("does nothing when game is already over", () => {
+    const state = makeState({ isGameOver: true });
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 2, gapColumn: 0 });
+    expect(result).toEqual(state);
+  });
+
+  it("adjusts current piece position upward", () => {
+    const piece = makeTPiece({ x: 4, y: 10 });
+    const state = makeState({ currentPiece: piece });
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 3, gapColumn: 0 });
+    expect(result.currentPiece!.position.y).toBe(7);
+  });
+
+  it("maintains board dimensions after garbage insertion", () => {
+    const state = makeState();
+    const result = gameReducer(state, { type: "RECEIVE_GARBAGE", lines: 4, gapColumn: 2 });
+    expect(result.board.length).toBe(BOARD_HEIGHT);
+    expect(result.board[0].length).toBe(BOARD_WIDTH);
+  });
+});
