@@ -89,7 +89,7 @@ export default function TwoPlayerGame({ onBackToMenu }: TwoPlayerGameProps) {
 
   return (
     <div style={{ position: "relative" }}>
-      <div key={gameKey} style={{ display: "flex", gap: 48, flexWrap: "wrap", justifyContent: "center" }}>
+      <div key={gameKey} className="two-player-board" style={{ display: "flex", gap: 32, justifyContent: "center" }}>
         <GameInstance ref={p1Ref} keyBindings={P1_KEYS} label="PLAYER 1" theme={P1_THEME} onLinesCleared={handleP1Clear} onGameOver={handleP1GameOver} />
         <GameInstance ref={p2Ref} keyBindings={P2_KEYS} label="PLAYER 2" theme={P2_THEME} onLinesCleared={handleP2Clear} onGameOver={handleP2GameOver} />
       </div>

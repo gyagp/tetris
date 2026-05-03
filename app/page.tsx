@@ -40,6 +40,14 @@ export default function Home() {
           display: flex;
           transform-origin: top center;
         }
+        .two-player-board {
+          transform-origin: top center;
+        }
+        @media (max-width: 1100px) {
+          .two-player-board {
+            transform: scale(calc(min(1, (100vw - 40px) / 920)));
+          }
+        }
         @media (max-width: 500px) {
           .game-container {
             flex-direction: column;

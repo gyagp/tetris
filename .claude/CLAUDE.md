@@ -1,12 +1,12 @@
 # Autopo test Session
 
 ## Work Unit
-Apply distinct color themes and Player 1/Player 2 labels to each board
+Ensure responsive split-screen layout works at 1024px+ desktop widths
 
 ## Acceptance Criteria
-- Player 1 label visible with blue/cyan theme accents
-- Player 2 label visible with red/orange theme accents
-- Board borders and sidebar styling reflect player theme
+- Two boards fit side by side at 1024px width without horizontal scroll
+- Boards scale appropriately at larger widths
+- Sidebars remain readable
 - npm run build succeeds
 
 ## Rules
